@@ -191,8 +191,8 @@ self.addEventListener("fetch", (e) => {
 ## src/components/pages/AcaraPage.tsx
 ```tsx
 import { useRef, useState } from "react";
-import type { Event } from "../../lib/db";
 import { useFlashAlert } from "../../hooks/useFlashAlert";
+import type { Event } from "../../lib/db";
 import { Alert, AlertDescription } from "../ui/alert";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
@@ -341,7 +341,7 @@ export default function AcaraPage({ event }: Props) {
                   name="alamat"
                   required
                   defaultValue={event?.alamat ?? ""}
-                  placeholder="Jl. Mawar No. 12, RT 03/05, Kel. Cipete"
+                  placeholder="Kp. Kebon Cau RT 001 RW 005, Kelurahan Pandeglang, Kecamatan Pandeglang, Kabupaten Pandeglang, Banten 42211"
                 />
               </Field>
             </CardContent>
@@ -2157,7 +2157,7 @@ const pageTitle = `${title} — Undangan Khitanan`;
       class="nav-glass fixed top-0 left-0 right-0 z-50 h-14 flex items-center px-4 sm:px-6 gap-3"
       role="banner"
     >
-      <a href="/" class="flex items-center gap-2.5 shrink-0 mr-2" aria-label="Beranda">
+      <a href="/" class="flex items-center gap-2.5 shrink-0" aria-label="Beranda">
         <div class="w-7 h-7 rounded-lg bg-primary flex items-center justify-center shadow-sm">
           <svg
             width="16"
@@ -2174,12 +2174,15 @@ const pageTitle = `${title} — Undangan Khitanan`;
               stroke-linejoin="round"></path>
           </svg>
         </div>
-        <span class="text-sm font-bold text-foreground hidden sm:block">Undangan Khitanan</span>
-        <span class="text-sm font-bold text-foreground sm:hidden">Khitanan</span>
+        <span class="text-sm font-bold text-foreground">
+          <span class="hidden sm:inline">Undangan Khitanan</span>
+          <span class="sm:hidden">Khitanan</span>
+        </span>
       </a>
 
       <nav
-        class="flex-1 flex items-center overflow-x-auto scrollbar-thin gap-0.5"
+        class="hidden sm:flex flex-1 items-center gap-0.5 overflow-x-auto scrollbar-thin"
+        id="nav-desktop"
         role="navigation"
         aria-label="Navigasi utama"
       >
@@ -2196,7 +2199,7 @@ const pageTitle = `${title} — Undangan Khitanan`;
         }
       </nav>
 
-      <div class="flex items-center gap-1.5 shrink-0">
+      <div class="flex items-center gap-1.5 shrink-0 ml-auto sm:ml-0">
         <button
           id="pwa-install-btn"
           class="pwa-install-btn"
@@ -2220,14 +2223,7 @@ const pageTitle = `${title} — Undangan Khitanan`;
           aria-label="Toggle tema gelap terang"
           title="Toggle tema"
         >
-          <svg
-            id="icon-sun"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            class="hidden dark:block"
-          >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" class="hidden dark:block">
             <circle cx="12" cy="12" r="5" stroke="currentColor" stroke-width="2"></circle>
             <path
               d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"
@@ -2235,14 +2231,7 @@ const pageTitle = `${title} — Undangan Khitanan`;
               stroke-width="2"
               stroke-linecap="round"></path>
           </svg>
-          <svg
-            id="icon-moon"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            class="block dark:hidden"
-          >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" class="block dark:hidden">
             <path
               d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"
               stroke="currentColor"
@@ -2251,8 +2240,60 @@ const pageTitle = `${title} — Undangan Khitanan`;
               stroke-linejoin="round"></path>
           </svg>
         </button>
+
+        <button
+          id="nav-toggle"
+          class="theme-toggle sm:hidden"
+          aria-label="Buka menu navigasi"
+          aria-expanded="false"
+          aria-controls="nav-mobile"
+        >
+          <svg id="icon-menu" width="18" height="18" viewBox="0 0 24 24" fill="none" class="block">
+            <path
+              d="M3 12h18M3 6h18M3 18h18"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"></path>
+          </svg>
+          <svg
+            id="icon-close"
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            class="hidden"
+          >
+            <path
+              d="M18 6L6 18M6 6l12 12"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"></path>
+          </svg>
+        </button>
       </div>
     </header>
+
+    <div
+      id="nav-mobile"
+      class="nav-glass fixed top-14 left-0 right-0 z-40 hidden sm:hidden flex-col py-2 border-t border-border/40"
+      role="navigation"
+      aria-label="Navigasi mobile"
+    >
+      {
+        NAV.map(({ href, label }) => (
+          <a
+            href={href}
+            class={[
+              "px-5 py-3 text-sm font-semibold transition-colors duration-150",
+              current === href ? "nav-mobile-link-active" : "nav-mobile-link",
+            ].join(" ")}
+            aria-current={current === href ? "page" : undefined}
+          >
+            {label}
+          </a>
+        ))
+      }
+    </div>
 
     <main
       class="flex-1 w-full max-w-5xl mx-auto px-4 sm:px-6 py-6 space-y-4 slide-up"
@@ -2261,7 +2302,7 @@ const pageTitle = `${title} — Undangan Khitanan`;
       <slot />
     </main>
 
-    <footer class="mt-auto border-t border-border/50 py-4 px-4 sm:px-6" role="contentinfo">
+    <footer class="border-t border-border/50 py-4 px-4 sm:px-6" role="contentinfo">
       <p class="text-center text-xs text-muted-foreground">
         &copy; 2026 &mdash; Build With Love By
         <span class="font-semibold text-primary">Yahya Zulfikri</span>
@@ -2269,10 +2310,51 @@ const pageTitle = `${title} — Undangan Khitanan`;
     </footer>
 
     <script is:inline>
-      const toggle = document.getElementById("theme-toggle");
-      toggle?.addEventListener("click", () => {
+      const themeToggle = document.getElementById("theme-toggle");
+      themeToggle?.addEventListener("click", () => {
         const isDark = document.documentElement.classList.toggle("dark");
         localStorage.setItem("theme", isDark ? "dark" : "light");
+      });
+
+      const navToggle = document.getElementById("nav-toggle");
+      const navMobile = document.getElementById("nav-mobile");
+      const iconMenu = document.getElementById("icon-menu");
+      const iconClose = document.getElementById("icon-close");
+
+      function closeMenu() {
+        navMobile?.classList.add("hidden");
+        navMobile?.classList.remove("flex");
+        iconMenu?.classList.remove("hidden");
+        iconClose?.classList.add("hidden");
+        navToggle?.setAttribute("aria-expanded", "false");
+      }
+
+      navToggle?.addEventListener("click", () => {
+        const isOpen = !navMobile?.classList.contains("hidden");
+        if (isOpen) {
+          closeMenu();
+        } else {
+          navMobile?.classList.remove("hidden");
+          navMobile?.classList.add("flex");
+          iconMenu?.classList.add("hidden");
+          iconClose?.classList.remove("hidden");
+          navToggle?.setAttribute("aria-expanded", "true");
+        }
+      });
+
+      document.addEventListener("click", (e) => {
+        if (
+          navMobile &&
+          !navMobile.contains(e.target) &&
+          !navToggle?.contains(e.target) &&
+          !navMobile.classList.contains("hidden")
+        ) {
+          closeMenu();
+        }
+      });
+
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") closeMenu();
       });
 
       let deferredPrompt = null;
@@ -2288,9 +2370,7 @@ const pageTitle = `${title} — Undangan Khitanan`;
         if (!deferredPrompt) return;
         deferredPrompt.prompt();
         const { outcome } = await deferredPrompt.userChoice;
-        if (outcome === "accepted") {
-          installBtn.classList.remove("visible");
-        }
+        if (outcome === "accepted") installBtn.classList.remove("visible");
         deferredPrompt = null;
       });
 
@@ -3163,6 +3243,41 @@ export const GET: APIRoute = () => {
 
   .pwa-install-btn.visible {
     @apply flex;
+  }
+
+  #nav-mobile {
+    animation: none;
+  }
+
+  #nav-mobile.flex {
+    animation: slideDown 0.2s ease-out both;
+  }
+
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .nav-mobile-link-active {
+    color: hsl(var(--primary));
+    background: hsl(var(--primary) / 0.08);
+    border-left: 2px solid hsl(var(--primary));
+  }
+
+  .nav-mobile-link {
+    color: hsl(var(--muted-foreground));
+    border-left: 2px solid transparent;
+  }
+
+  .nav-mobile-link:hover {
+    color: hsl(var(--foreground));
+    background: hsl(var(--muted) / 0.5);
   }
 }
 

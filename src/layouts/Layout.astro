@@ -51,6 +51,7 @@ const pageTitle = `${title} — Undangan Khitanan`;
     <meta name="mobile-web-app-capable" content="yes" />
 
     <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="icon" href="/favicon.ico" sizes="any" />
     <link rel="icon" href="/icons/icon-192.png" type="image/png" sizes="192x192" />
     <link rel="apple-touch-icon" href="/icons/icon-192.png" />
 
@@ -78,21 +79,8 @@ const pageTitle = `${title} — Undangan Khitanan`;
       role="banner"
     >
       <a href="/" class="flex items-center gap-2.5 shrink-0" aria-label="Beranda">
-        <div class="w-7 h-7 rounded-lg bg-primary flex items-center justify-center shadow-sm">
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            class="text-primary-foreground"
-          >
-            <path
-              d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"></path>
-          </svg>
+        <div class="w-7 h-7 rounded-lg overflow-hidden shadow-sm">
+          <img src="/favicon.ico" alt="Logo" class="w-full h-full object-cover" />
         </div>
         <span class="text-sm font-bold text-foreground">
           <span class="hidden sm:inline">Undangan Khitanan</span>
