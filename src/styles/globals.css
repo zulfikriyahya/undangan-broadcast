@@ -235,6 +235,41 @@
   .pwa-install-btn.visible {
     @apply flex;
   }
+
+  #nav-mobile {
+    animation: none;
+  }
+
+  #nav-mobile.flex {
+    animation: slideDown 0.2s ease-out both;
+  }
+
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .nav-mobile-link-active {
+    color: hsl(var(--primary));
+    background: hsl(var(--primary) / 0.08);
+    border-left: 2px solid hsl(var(--primary));
+  }
+
+  .nav-mobile-link {
+    color: hsl(var(--muted-foreground));
+    border-left: 2px solid transparent;
+  }
+
+  .nav-mobile-link:hover {
+    color: hsl(var(--foreground));
+    background: hsl(var(--muted) / 0.5);
+  }
 }
 
 @layer utilities {
