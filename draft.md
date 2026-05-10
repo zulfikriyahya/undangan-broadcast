@@ -30,6 +30,20 @@ DB_NAME=undangan_khitanan
 ```
 ---
 
+## .env-example
+```text
+SITE_URL=http://localhost:4321
+WA_ENDPOINT=https://wapi.zedlabs.id/api/messages/send
+WA_API_KEY="Token API WhatsApp Anda"
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_USER=
+DB_PASS=
+DB_NAME=undangan_broadcast
+
+```
+---
+
 ## package.json
 ```json
 {
@@ -70,6 +84,95 @@ DB_NAME=undangan_khitanan
     "@types/react-dom": "^19.2.3"
   }
 }
+
+```
+---
+
+## public/manifest.webmanifest
+```text
+{
+  "name": "Undangan Khitanan",
+  "short_name": "Khitanan",
+  "description": "Aplikasi manajemen undangan khitanan digital — kelola tamu, broadcast WhatsApp, dan kartu undangan.",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#f4faf6",
+  "theme_color": "#2d6a4f",
+  "lang": "id",
+  "dir": "ltr",
+  "categories": [
+    "utilities",
+    "productivity"
+  ],
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/icons/screenshot-mobile.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Dashboard Undangan Khitanan"
+    }
+  ]
+}
+
+```
+---
+
+## public/sw.js
+```js
+const CACHE = "khitanan-v1";
+const PRECACHE = ["/", "/acara", "/tamu", "/kartu", "/broadcast"];
+
+self.addEventListener("install", (e) => {
+  e.waitUntil(
+    caches
+      .open(CACHE)
+      .then((c) => c.addAll(PRECACHE))
+      .then(() => self.skipWaiting())
+  );
+});
+
+self.addEventListener("activate", (e) => {
+  e.waitUntil(
+    caches
+      .keys()
+      .then((keys) => Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k))))
+      .then(() => self.clients.claim())
+  );
+});
+
+self.addEventListener("fetch", (e) => {
+  if (e.request.method !== "GET") return;
+  const url = new URL(e.request.url);
+  if (url.pathname.startsWith("/api/")) return;
+
+  e.respondWith(
+    fetch(e.request)
+      .then((res) => {
+        if (res && res.status === 200 && res.type === "basic") {
+          const clone = res.clone();
+          caches.open(CACHE).then((c) => c.put(e.request, clone));
+        }
+        return res;
+      })
+      .catch(() => caches.match(e.request))
+  );
+});
 
 ```
 ---
@@ -151,106 +254,138 @@ export default function AcaraPage({ event }: Props) {
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Setup Acara</CardTitle>
-      </CardHeader>
-      <CardContent>
-        {alert && (
-          <Alert variant={alert.variant} className="mb-4">
-            <AlertDescription>{alert.message}</AlertDescription>
-          </Alert>
-        )}
+    <div className="fade-in space-y-4">
+      <div className="mb-1">
+        <h1 className="text-xl font-bold text-foreground">Setup Acara</h1>
+        <p className="text-xs text-muted-foreground mt-0.5">
+          Isi informasi acara khitanan untuk digunakan di kartu undangan dan pesan broadcast.
+        </p>
+      </div>
 
-        <form ref={formRef} onSubmit={handleSubmit} method="post" encType="multipart/form-data">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Field label="Nama Anak *" id="nama_anak">
-              <Input
-                id="nama_anak"
-                name="nama_anak"
-                required
-                defaultValue={event?.nama_anak ?? ""}
-                placeholder="Muhammad Farhan"
-              />
-            </Field>
+      {alert && (
+        <Alert variant={alert.variant}>
+          <AlertDescription>{alert.message}</AlertDescription>
+        </Alert>
+      )}
 
-            <Field label="Anak Ke- *" id="anak_ke">
-              <Input
-                id="anak_ke"
-                name="anak_ke"
-                type="number"
-                min="1"
-                required
-                defaultValue={event?.anak_ke ?? 1}
-              />
-            </Field>
+      <form ref={formRef} onSubmit={handleSubmit} method="post" encType="multipart/form-data">
+        <div className="bento-grid">
+          <Card className="sm:col-span-2">
+            <CardHeader>
+              <CardTitle>Identitas Anak</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Field label="Nama Anak *" id="nama_anak">
+                  <Input
+                    id="nama_anak"
+                    name="nama_anak"
+                    required
+                    defaultValue={event?.nama_anak ?? ""}
+                    placeholder="Muhammad Farhan"
+                  />
+                </Field>
 
-            <Field label="Nama Bapak *" id="nama_bapak">
-              <Input
-                id="nama_bapak"
-                name="nama_bapak"
-                required
-                defaultValue={event?.nama_bapak ?? ""}
-                placeholder="Ahmad Fauzi"
-              />
-            </Field>
+                <Field label="Anak Ke- *" id="anak_ke">
+                  <Input
+                    id="anak_ke"
+                    name="anak_ke"
+                    type="number"
+                    min="1"
+                    required
+                    defaultValue={event?.anak_ke ?? 1}
+                  />
+                </Field>
 
-            <Field label="Nama Ibu *" id="nama_ibu">
-              <Input
-                id="nama_ibu"
-                name="nama_ibu"
-                required
-                defaultValue={event?.nama_ibu ?? ""}
-                placeholder="Siti Rahayu"
-              />
-            </Field>
+                <Field label="Nama Bapak *" id="nama_bapak">
+                  <Input
+                    id="nama_bapak"
+                    name="nama_bapak"
+                    required
+                    defaultValue={event?.nama_bapak ?? ""}
+                    placeholder="Ahmad Fauzi"
+                  />
+                </Field>
 
-            <Field label="Alamat Acara *" id="alamat" className="sm:col-span-2">
-              <Textarea
-                id="alamat"
-                name="alamat"
-                required
-                defaultValue={event?.alamat ?? ""}
-                placeholder="Jl. Mawar No. 12, RT 03/05, Kel. Cipete"
-              />
-            </Field>
+                <Field label="Nama Ibu *" id="nama_ibu">
+                  <Input
+                    id="nama_ibu"
+                    name="nama_ibu"
+                    required
+                    defaultValue={event?.nama_ibu ?? ""}
+                    placeholder="Siti Rahayu"
+                  />
+                </Field>
+              </div>
+            </CardContent>
+          </Card>
 
-            <Field label="Tanggal & Waktu Acara *" id="tanggal">
-              <Input
-                id="tanggal"
-                name="tanggal"
-                type="datetime-local"
-                required
-                defaultValue={event?.tanggal ?? ""}
-              />
-            </Field>
-
-            <Field label="Foto Anak" id="foto">
-              <Input
-                id="foto"
-                name="foto"
-                type="file"
-                accept="image/*"
-                onChange={handleFileChange}
-              />
-              {preview && (
-                <img
-                  src={preview}
-                  alt="Preview foto"
-                  className="mt-2 w-20 h-20 object-cover rounded-lg border-2 border-primary"
+          <Card>
+            <CardHeader>
+              <CardTitle>Waktu &amp; Tempat</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Field label="Tanggal &amp; Waktu Acara *" id="tanggal">
+                <Input
+                  id="tanggal"
+                  name="tanggal"
+                  type="datetime-local"
+                  required
+                  defaultValue={event?.tanggal ?? ""}
                 />
-              )}
-            </Field>
-          </div>
+              </Field>
 
-          <div className="mt-5">
-            <Button type="submit" disabled={loading}>
-              {loading ? "Menyimpan..." : "Simpan Data Acara"}
-            </Button>
-          </div>
-        </form>
-      </CardContent>
-    </Card>
+              <Field label="Alamat Acara *" id="alamat">
+                <Textarea
+                  id="alamat"
+                  name="alamat"
+                  required
+                  defaultValue={event?.alamat ?? ""}
+                  placeholder="Jl. Mawar No. 12, RT 03/05, Kel. Cipete"
+                />
+              </Field>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Foto Anak</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <Field label="Upload Foto" id="foto">
+                <Input
+                  id="foto"
+                  name="foto"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                />
+              </Field>
+              {preview ? (
+                <div className="flex items-center gap-3 mt-1">
+                  <img
+                    src={preview}
+                    alt="Preview foto"
+                    className="w-20 h-20 object-cover rounded-xl border-2 border-primary shadow-sm"
+                  />
+                  <p className="text-xs text-muted-foreground">Preview foto anak</p>
+                </div>
+              ) : (
+                <div className="w-20 h-20 rounded-xl bg-muted border-2 border-dashed border-border flex items-center justify-center text-2xl">
+                  &#128102;
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="mt-4 flex justify-end">
+          <Button type="submit" disabled={loading} size="lg">
+            {loading ? "Menyimpan..." : "Simpan Data Acara"}
+          </Button>
+        </div>
+      </form>
+    </div>
   );
 }
 
@@ -424,14 +559,12 @@ export default function BroadcastPage({ event, tamu: initialTamu }: Props) {
         });
         break;
       }
-
       const t = targets[i];
       const pesan = resolveVars(template, event, t.nama, t.kartu_url);
       setProgress({
         value: Math.round(((i + 1) / targets.length) * 100),
         label: `Mengirim ${i + 1}/${targets.length}: ${t.nama}...`,
       });
-
       try {
         const res = await fetch("/api/broadcast", {
           method: "POST",
@@ -443,7 +576,6 @@ export default function BroadcastPage({ event, tamu: initialTamu }: Props) {
       } catch {
         setLogs((prev) => [{ nama: t.nama, ok: false, note: "Network error" }, ...prev]);
       }
-
       if (i < targets.length - 1 && !stopRef.current) {
         await new Promise((r) => setTimeout(r, 2500));
       }
@@ -453,192 +585,232 @@ export default function BroadcastPage({ event, tamu: initialTamu }: Props) {
     await Promise.all([loadRiwayat(), refreshTamu()]);
   }
 
+  const sentCount = riwayat.filter((r) => r.status === "sent").length;
+  const failedCount = riwayat.filter((r) => r.status === "failed").length;
+
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-4">
-      <div className="space-y-4">
-        {!event && (
-          <Alert variant="warning">
-            <AlertDescription>
-              Data acara belum diisi.{" "}
-              <a href="/acara" className="font-bold underline">
-                Setup dulu
-              </a>
-            </AlertDescription>
-          </Alert>
-        )}
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Compose Pesan</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="flex gap-2 flex-wrap items-center">
-              <span className="text-xs text-muted-foreground font-semibold">Template:</span>
-              {Object.keys(TEMPLATES).map((key) => (
-                <Button
-                  key={key}
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setTemplate(TEMPLATES[key])}
-                >
-                  {key.charAt(0).toUpperCase() + key.slice(1)}
-                </Button>
-              ))}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Variabel:{" "}
-              {["{{nama}}", "{{nama_anak}}", "{{tanggal}}", "{{alamat}}", "{{kartu_url}}"].map(
-                (v) => (
-                  <code key={v} className="bg-muted px-1 rounded mr-1">
-                    {v}
-                  </code>
-                )
-              )}
-            </p>
-            <Textarea rows={8} value={template} onChange={(e) => setTemplate(e.target.value)} />
-            <div className="rounded-lg bg-muted/60 border border-border p-3">
-              <p className="text-xs font-semibold text-primary mb-1">Preview (tamu pertama)</p>
-              <pre className="text-xs text-foreground whitespace-pre-wrap break-words font-sans">
-                {previewText}
-              </pre>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Pilih Penerima</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="flex gap-2">
-              <Input
-                placeholder="Cari nama..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-              <Select value={filterStatus} onValueChange={setFilterStatus}>
-                <SelectTrigger className="w-44">
-                  <SelectValue placeholder="Semua" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Semua</SelectItem>
-                  <SelectItem value="belum">Belum Terkirim</SelectItem>
-                  <SelectItem value="sent">Sudah Terkirim</SelectItem>
-                  <SelectItem value="failed">Gagal</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="flex items-center justify-between text-xs border-b border-border pb-2">
-              <label className="flex items-center gap-2 font-semibold cursor-pointer">
-                <input type="checkbox" onChange={(e) => toggleAll(e.target.checked)} />
-                Pilih Semua
-              </label>
-              <span className="text-primary font-semibold">{selected.size} dipilih</span>
-            </div>
-
-            <div className="max-h-72 overflow-y-auto space-y-0.5">
-              {filtered.map((t) => (
-                <label
-                  key={t.id}
-                  className={`flex items-center gap-2 px-2 py-2 rounded cursor-pointer text-sm hover:bg-muted/60 ${t.last_status === "sent" ? "opacity-60" : ""}`}
-                >
-                  <input
-                    type="checkbox"
-                    checked={selected.has(t.id)}
-                    onChange={(e) => toggleOne(t.id, e.target.checked)}
-                  />
-                  <div className="flex-1">
-                    <p className="font-semibold leading-none">{t.nama}</p>
-                    <p className="text-xs text-muted-foreground">{t.no_telpon}</p>
-                  </div>
-                  <StatusBadge status={t.last_status as BroadcastStatus} />
-                </label>
-              ))}
-              {!filtered.length && (
-                <p className="text-xs text-muted-foreground py-4 text-center">
-                  Tidak ada tamu ditemukan.
-                </p>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="pt-5 space-y-3">
-            <Button
-              variant="wa"
-              className="w-full text-base py-5"
-              onClick={startBroadcast}
-              disabled={running}
-            >
-              {running ? "Mengirim..." : "Mulai Broadcast"}
-            </Button>
-
-            {progress && (
-              <div className="space-y-1.5">
-                <Progress value={progress.value} />
-                <p className="text-xs text-muted-foreground">{progress.label}</p>
-                {running && (
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={() => {
-                      stopRef.current = true;
-                    }}
-                  >
-                    Stop
-                  </Button>
-                )}
-                <div className="max-h-40 overflow-y-auto space-y-0.5">
-                  {logs.map((log, i) => (
-                    <p
-                      key={i}
-                      className={`text-xs ${log.ok ? "text-emerald-700" : "text-destructive"}`}
-                    >
-                      {log.ok ? "OK" : "GAGAL"} — {log.nama}
-                      {log.note ? ` (${log.note})` : ""}
-                    </p>
-                  ))}
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+    <div className="fade-in space-y-4">
+      <div className="mb-1">
+        <h1 className="text-xl font-bold text-foreground">Broadcast WhatsApp</h1>
+        <p className="text-xs text-muted-foreground mt-0.5">
+          Kirim undangan massal via WhatsApp dengan template pesan dinamis.
+        </p>
       </div>
 
-      <div>
-        <Card>
-          <CardHeader>
-            <div className="flex justify-between items-center">
-              <CardTitle>Riwayat Broadcast</CardTitle>
-              <Button variant="outline" size="sm" onClick={loadRiwayat}>
-                Refresh
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="max-h-[560px] overflow-y-auto">
-              {riwayat.length === 0 && (
-                <p className="text-xs text-muted-foreground py-4 text-center">Belum ada riwayat.</p>
-              )}
-              {riwayat.map((r) => (
-                <div key={r.id} className="py-3 border-b border-border last:border-0">
-                  <div className="flex items-center justify-between gap-2 mb-0.5">
-                    <span className="font-semibold text-sm">{r.nama}</span>
-                    <StatusBadge status={r.status as BroadcastStatus} />
-                  </div>
-                  <p className="text-xs text-muted-foreground">{r.no_telpon}</p>
-                  <p className="text-xs text-muted-foreground mt-1 whitespace-pre-wrap line-clamp-2">
-                    {r.pesan?.substring(0, 80)}
-                    {(r.pesan?.length ?? 0) > 80 ? "..." : ""}
+      {!event && (
+        <Alert variant="warning">
+          <AlertDescription>
+            Data acara belum diisi.{" "}
+            <a href="/acara" className="font-bold underline">
+              Setup dulu
+            </a>
+          </AlertDescription>
+        </Alert>
+      )}
+
+      <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-4">
+        <div className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Compose Pesan</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex gap-2 flex-wrap items-center">
+                <span className="text-xs text-muted-foreground font-semibold">Template:</span>
+                {Object.keys(TEMPLATES).map((key) => (
+                  <Button
+                    key={key}
+                    variant={template === TEMPLATES[key] ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setTemplate(TEMPLATES[key])}
+                  >
+                    {key.charAt(0).toUpperCase() + key.slice(1)}
+                  </Button>
+                ))}
+              </div>
+
+              <p className="text-xs text-muted-foreground">
+                Variabel:{" "}
+                {["{{nama}}", "{{nama_anak}}", "{{tanggal}}", "{{alamat}}", "{{kartu_url}}"].map(
+                  (v) => (
+                    <code key={v} className="bg-muted px-1 rounded mr-1 text-xs">
+                      {v}
+                    </code>
+                  )
+                )}
+              </p>
+
+              <Textarea rows={8} value={template} onChange={(e) => setTemplate(e.target.value)} />
+
+              <div className="rounded-lg bg-muted/40 border border-border/60 p-3">
+                <p className="text-xs font-semibold text-primary mb-1.5">Preview (tamu pertama)</p>
+                <pre className="text-xs text-foreground whitespace-pre-wrap break-words font-sans leading-relaxed">
+                  {previewText}
+                </pre>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>
+                Pilih Penerima
+                <span className="ml-2 text-xs font-normal text-muted-foreground">
+                  {selected.size} dipilih
+                </span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Cari nama..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+                <Select value={filterStatus} onValueChange={setFilterStatus}>
+                  <SelectTrigger className="w-44">
+                    <SelectValue placeholder="Semua" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Semua</SelectItem>
+                    <SelectItem value="belum">Belum Terkirim</SelectItem>
+                    <SelectItem value="sent">Sudah Terkirim</SelectItem>
+                    <SelectItem value="failed">Gagal</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="flex items-center justify-between text-xs border-b border-border/50 pb-2">
+                <label className="flex items-center gap-2 font-semibold cursor-pointer select-none">
+                  <input type="checkbox" onChange={(e) => toggleAll(e.target.checked)} />
+                  Pilih Semua ({filtered.length})
+                </label>
+              </div>
+
+              <div className="max-h-64 overflow-y-auto scrollbar-thin space-y-0.5">
+                {filtered.map((t) => (
+                  <label
+                    key={t.id}
+                    className={`flex items-center gap-2 px-2 py-2 rounded-lg cursor-pointer text-sm hover:bg-muted/50 transition-colors ${t.last_status === "sent" ? "opacity-60" : ""}`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selected.has(t.id)}
+                      onChange={(e) => toggleOne(t.id, e.target.checked)}
+                    />
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold leading-none truncate">{t.nama}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">{t.no_telpon}</p>
+                    </div>
+                    <StatusBadge status={t.last_status as BroadcastStatus} />
+                  </label>
+                ))}
+                {!filtered.length && (
+                  <p className="text-xs text-muted-foreground py-6 text-center">
+                    Tidak ada tamu ditemukan.
                   </p>
-                  <p className="text-xs text-muted-foreground/60 mt-0.5">{r.sent_at ?? r.status}</p>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="pt-5 space-y-3">
+              <Button
+                variant="wa"
+                className="w-full text-base py-5"
+                onClick={startBroadcast}
+                disabled={running}
+              >
+                {running ? "Mengirim..." : "Mulai Broadcast"}
+              </Button>
+
+              {progress && (
+                <div className="space-y-2">
+                  <Progress value={progress.value} />
+                  <p className="text-xs text-muted-foreground">{progress.label}</p>
+                  {running && (
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => {
+                        stopRef.current = true;
+                      }}
+                    >
+                      Stop
+                    </Button>
+                  )}
+                  <div className="max-h-36 overflow-y-auto scrollbar-thin space-y-0.5 mt-1">
+                    {logs.map((log, i) => (
+                      <p
+                        key={i}
+                        className={`text-xs ${log.ok ? "text-emerald-600" : "text-destructive"}`}
+                      >
+                        {log.ok ? "OK" : "GAGAL"} — {log.nama}
+                        {log.note ? ` (${log.note})` : ""}
+                      </p>
+                    ))}
+                  </div>
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="space-y-4">
+          <div className="bento-grid-2">
+            <Card>
+              <CardContent className="p-4 text-center">
+                <span className="block text-2xl font-extrabold text-emerald-600">{sentCount}</span>
+                <span className="text-xs text-muted-foreground font-semibold">Terkirim</span>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-4 text-center">
+                <span className="block text-2xl font-extrabold text-destructive">
+                  {failedCount}
+                </span>
+                <span className="text-xs text-muted-foreground font-semibold">Gagal</span>
+              </CardContent>
+            </Card>
+          </div>
+
+          <Card>
+            <CardHeader>
+              <div className="flex justify-between items-center">
+                <CardTitle>Riwayat Broadcast</CardTitle>
+                <Button variant="outline" size="sm" onClick={loadRiwayat}>
+                  Refresh
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="max-h-[480px] overflow-y-auto scrollbar-thin">
+                {riwayat.length === 0 && (
+                  <p className="text-xs text-muted-foreground py-6 text-center">
+                    Belum ada riwayat.
+                  </p>
+                )}
+                {riwayat.map((r) => (
+                  <div key={r.id} className="py-3 border-b border-border/50 last:border-0">
+                    <div className="flex items-center justify-between gap-2 mb-0.5">
+                      <span className="font-semibold text-sm truncate">{r.nama}</span>
+                      <StatusBadge status={r.status as BroadcastStatus} />
+                    </div>
+                    <p className="text-xs text-muted-foreground">{r.no_telpon}</p>
+                    <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                      {r.pesan?.substring(0, 80)}
+                      {(r.pesan?.length ?? 0) > 80 ? "..." : ""}
+                    </p>
+                    <p className="text-xs text-muted-foreground/50 mt-0.5">
+                      {r.sent_at ?? r.status}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );
@@ -669,12 +841,12 @@ const statItems = (stats: Stats) => [
   { label: "Total Tamu", value: stats.total, className: "text-primary" },
   { label: "Terkirim", value: stats.sent, className: "text-emerald-600" },
   { label: "Gagal", value: stats.failed, className: "text-destructive" },
-  { label: "Belum Kirim", value: stats.total - stats.sent, className: "text-amber-600" },
+  { label: "Belum Kirim", value: stats.total - stats.sent, className: "text-amber-500" },
 ];
 
 export default function DashboardPage({ event, stats }: Props) {
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 fade-in">
       {!event && (
         <Alert variant="warning">
           <AlertDescription>
@@ -686,40 +858,7 @@ export default function DashboardPage({ event, stats }: Props) {
         </Alert>
       )}
 
-      {event && (
-        <Card>
-          <CardContent className="p-5">
-            <div className="flex gap-5 items-start">
-              <div className="shrink-0">
-                {event.foto_path ? (
-                  <img
-                    src={event.foto_path}
-                    alt="Foto anak"
-                    className="w-24 h-24 rounded-lg object-cover border-2 border-primary"
-                  />
-                ) : (
-                  <div className="w-24 h-24 rounded-lg bg-accent border-2 border-primary flex items-center justify-center text-3xl">
-                    👦
-                  </div>
-                )}
-              </div>
-              <div className="space-y-1">
-                <h2 className="text-lg font-bold text-foreground">Khitanan {event.nama_anak}</h2>
-                <p className="text-sm text-muted-foreground">
-                  Putra ke-{event.anak_ke} dari{" "}
-                  <span className="font-semibold text-foreground">{event.nama_bapak}</span>
-                  {" & "}
-                  <span className="font-semibold text-foreground">{event.nama_ibu}</span>
-                </p>
-                <p className="text-sm text-muted-foreground">{formatDate(event.tanggal)}</p>
-                <p className="text-sm text-muted-foreground">{event.alamat}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div className="bento-grid-4">
         {statItems(stats).map(({ label, value, className }) => (
           <Card key={label}>
             <CardContent className="p-4 text-center">
@@ -729,6 +868,41 @@ export default function DashboardPage({ event, stats }: Props) {
           </Card>
         ))}
       </div>
+
+      {event && (
+        <Card>
+          <CardContent className="p-5">
+            <div className="flex gap-5 items-start">
+              <div className="shrink-0">
+                {event.foto_path ? (
+                  <img
+                    src={event.foto_path}
+                    alt="Foto anak"
+                    className="w-24 h-24 rounded-xl object-cover border-2 border-primary shadow-sm"
+                  />
+                ) : (
+                  <div className="w-24 h-24 rounded-xl bg-accent border-2 border-primary flex items-center justify-center text-3xl shadow-sm">
+                    &#128102;
+                  </div>
+                )}
+              </div>
+              <div className="space-y-1.5 min-w-0">
+                <h2 className="text-lg font-bold text-foreground truncate">
+                  Khitanan {event.nama_anak}
+                </h2>
+                <p className="text-sm text-muted-foreground">
+                  Putra ke-{event.anak_ke} dari{" "}
+                  <span className="font-semibold text-foreground">{event.nama_bapak}</span>
+                  {" & "}
+                  <span className="font-semibold text-foreground">{event.nama_ibu}</span>
+                </p>
+                <p className="text-sm text-muted-foreground">{formatDate(event.tanggal)}</p>
+                <p className="text-sm text-muted-foreground line-clamp-2">{event.alamat}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
@@ -774,12 +948,12 @@ function buildKartuHTML(event: Event, namaTamu: string): string {
   <svg style="position:absolute;top:0;left:0;width:160px;opacity:.25" viewBox="0 0 160 160">
     <circle cx="0" cy="0" r="140" fill="none" stroke="#fff" stroke-width="1.5"/>
     <circle cx="0" cy="0" r="110" fill="none" stroke="#fff" stroke-width="1"/>
-    <circle cx="0" cy="0" r="80" fill="none" stroke="#d4af37" stroke-width="1.5"/>
+    <circle cx="0" cy="0" r="80"  fill="none" stroke="#d4af37" stroke-width="1.5"/>
   </svg>
   <svg style="position:absolute;bottom:0;right:0;width:160px;opacity:.25;transform:rotate(180deg)" viewBox="0 0 160 160">
     <circle cx="0" cy="0" r="140" fill="none" stroke="#fff" stroke-width="1.5"/>
     <circle cx="0" cy="0" r="110" fill="none" stroke="#fff" stroke-width="1"/>
-    <circle cx="0" cy="0" r="80" fill="none" stroke="#d4af37" stroke-width="1.5"/>
+    <circle cx="0" cy="0" r="80"  fill="none" stroke="#d4af37" stroke-width="1.5"/>
   </svg>
   <div style="position:absolute;left:0;top:0;width:260px;height:500px;background:rgba(0,0,0,.25);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px">
     <div style="width:160px;height:160px;border-radius:50%;border:4px solid #d4af37;overflow:hidden;background:#1b4332;display:flex;align-items:center;justify-content:center">
@@ -819,7 +993,6 @@ async function generatePNG(event: Event, namaTamu: string): Promise<Blob> {
     document.body.appendChild(target);
   }
   target.innerHTML = buildKartuHTML(event, namaTamu);
-
   const canvas = await (window as any).html2canvas(target.firstElementChild, {
     scale: 2,
     useCORS: true,
@@ -844,11 +1017,9 @@ async function uploadKartu(event: Event, tamuId: number, namaTamu: string): Prom
   const fd = new FormData();
   fd.append("file", blob, filename);
   fd.append("filename", filename);
-
   const res = await fetch("/api/kartu/upload", { method: "POST", body: fd });
   const data = await res.json();
   if (!data.ok) return null;
-
   await fetch("/api/tamu", {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
@@ -857,9 +1028,7 @@ async function uploadKartu(event: Event, tamuId: number, namaTamu: string): Prom
   return data.url;
 }
 
-async function sleep(ms: number) {
-  return new Promise((r) => setTimeout(r, ms));
-}
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 interface ProgressState {
   value: number;
@@ -942,124 +1111,125 @@ export default function KartuPage({ event, tamu }: Props) {
     );
   }
 
+  const uploaded = tamuData.filter((t) => t.kartu_url).length;
+  const pctUpload = tamuData.length ? Math.round((uploaded / tamuData.length) * 100) : 0;
+
   return (
-    <>
+    <div className="fade-in space-y-4">
+      <div className="mb-1">
+        <h1 className="text-xl font-bold text-foreground">Kartu Undangan</h1>
+        <p className="text-xs text-muted-foreground mt-0.5">
+          Generate, preview, dan upload kartu undangan per tamu.
+        </p>
+      </div>
+
       <script
         src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"
         async
       />
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Generate Kartu Undangan</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex flex-wrap gap-3 items-end">
-            <div className="space-y-1.5 min-w-[200px]">
-              <label className="text-xs font-semibold text-muted-foreground">Pilih Tamu</label>
-              <Select value={selectedId} onValueChange={setSelectedId}>
-                <SelectTrigger>
-                  <SelectValue placeholder="— Pilih tamu —" />
-                </SelectTrigger>
-                <SelectContent>
-                  {tamu.map((t) => (
-                    <SelectItem key={t.id} value={String(t.id)}>
-                      {t.nama}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+      <div className="bento-grid">
+        <Card>
+          <CardHeader>
+            <CardTitle>Pilih Tamu</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <Select value={selectedId} onValueChange={setSelectedId}>
+              <SelectTrigger>
+                <SelectValue placeholder="— Pilih tamu —" />
+              </SelectTrigger>
+              <SelectContent>
+                {tamu.map((t) => (
+                  <SelectItem key={t.id} value={String(t.id)}>
+                    {t.nama}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
 
-            <div className="flex flex-wrap gap-2">
-              <Button onClick={preview} disabled={!selectedId}>
+            <div className="grid grid-cols-2 gap-2">
+              <Button onClick={preview} disabled={!selectedId} variant="outline" size="sm">
                 Preview
               </Button>
-              <Button variant="success" onClick={downloadSatu} disabled={!selectedId}>
+              <Button onClick={downloadSatu} disabled={!selectedId} variant="success" size="sm">
                 Download
               </Button>
-              <Button variant="outline" onClick={uploadSatu} disabled={!selectedId}>
+              <Button onClick={uploadSatu} disabled={!selectedId} variant="secondary" size="sm">
                 Upload URL
               </Button>
-              <Button variant="warning" onClick={downloadSemua}>
+              <Button onClick={downloadSemua} variant="warning" size="sm">
                 Download Semua
               </Button>
-              <Button variant="secondary" onClick={uploadSemua}>
-                Upload Semua
-              </Button>
             </div>
-          </div>
+            <Button onClick={uploadSemua} variant="default" size="sm" className="w-full">
+              Upload Semua
+            </Button>
 
-          {progress && (
-            <div className="space-y-1.5">
-              <Progress value={progress.value} />
-              <p className="text-xs text-muted-foreground">{progress.label}</p>
+            {progress && (
+              <div className="space-y-1.5 pt-1">
+                <Progress value={progress.value} />
+                <p className="text-xs text-muted-foreground">{progress.label}</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>
+              Status Upload
+              <span className="ml-2 text-xs font-normal text-muted-foreground">
+                {uploaded}/{tamuData.length} kartu
+              </span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <Progress value={pctUpload} />
+            <p className="text-xs text-muted-foreground">{pctUpload}% kartu sudah di-upload</p>
+            <div className="max-h-48 overflow-y-auto scrollbar-thin space-y-0.5">
+              {tamuData.map((t) => (
+                <div
+                  key={t.id}
+                  className="flex items-center justify-between py-1.5 border-b border-border/40 last:border-0"
+                >
+                  <span className="text-sm font-medium truncate mr-2">{t.nama}</span>
+                  {t.kartu_url ? (
+                    <a href={t.kartu_url} target="_blank" rel="noreferrer" className="shrink-0">
+                      <Badge variant="sent">Siap</Badge>
+                    </a>
+                  ) : (
+                    <Badge variant="none" className="shrink-0">
+                      Belum
+                    </Badge>
+                  )}
+                </div>
+              ))}
             </div>
-          )}
+          </CardContent>
+        </Card>
+      </div>
 
-          {previewHtml && (
-            <div className="bg-muted rounded-lg p-3 overflow-auto">
+      {previewHtml && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Preview Kartu — {selectedTamu?.nama}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="bg-muted/40 rounded-lg p-3 overflow-auto">
               <div
                 style={{
                   transformOrigin: "top left",
-                  transform: "scale(0.6)",
+                  transform: "scale(0.55)",
                   width: 800,
                   height: 500,
                 }}
                 dangerouslySetInnerHTML={{ __html: previewHtml }}
               />
             </div>
-          )}
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Status Kartu Tamu</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm border-collapse">
-              <thead>
-                <tr className="bg-muted text-muted-foreground text-xs">
-                  <th className="px-3 py-2 text-left">Nama</th>
-                  <th className="px-3 py-2 text-left">Status</th>
-                  <th className="px-3 py-2 text-left">URL</th>
-                </tr>
-              </thead>
-              <tbody>
-                {tamuData.map((t) => (
-                  <tr key={t.id} className="border-b border-border hover:bg-muted/40">
-                    <td className="px-3 py-2 font-medium">{t.nama}</td>
-                    <td className="px-3 py-2">
-                      {t.kartu_url ? (
-                        <Badge variant="sent">Siap</Badge>
-                      ) : (
-                        <Badge variant="none">Belum di-upload</Badge>
-                      )}
-                    </td>
-                    <td className="px-3 py-2">
-                      {t.kartu_url ? (
-                        <a
-                          href={t.kartu_url}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="text-primary text-xs underline"
-                        >
-                          Lihat
-                        </a>
-                      ) : (
-                        <span className="text-muted-foreground">—</span>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </CardContent>
-      </Card>
-    </>
+          </CardContent>
+        </Card>
+      )}
+    </div>
   );
 }
 
@@ -1251,77 +1421,93 @@ export default function TamuPage() {
   }
 
   return (
-    <div className="space-y-4">
-      <Card>
-        <CardHeader>
-          <CardTitle>Import dari Excel</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <p className="text-xs text-muted-foreground">
-            Kolom yang dikenali: <code className="bg-muted px-1 rounded text-xs">nama_lengkap</code>
-            , <code className="bg-muted px-1 rounded text-xs">alamat</code>,{" "}
-            <code className="bg-muted px-1 rounded text-xs">no_telpon</code> (opsional).
-          </p>
-          <div className="flex gap-2 flex-wrap items-center">
-            <Input type="file" accept=".xlsx,.xls" className="w-auto" onChange={handleImport} />
-            <Button variant="secondary" asChild>
-              <a href="/template-tamu.xlsx" download>
-                Unduh Template
-              </a>
-            </Button>
-          </div>
-          {importAlert.alert && (
-            <Alert variant={importAlert.alert.variant}>
-              <AlertDescription>{importAlert.alert.message}</AlertDescription>
-            </Alert>
-          )}
-        </CardContent>
-      </Card>
+    <div className="fade-in space-y-4">
+      <div className="mb-1">
+        <h1 className="text-xl font-bold text-foreground">Tamu Undangan</h1>
+        <p className="text-xs text-muted-foreground mt-0.5">
+          Kelola daftar tamu, import dari Excel, atau tambah secara manual.
+        </p>
+      </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Tambah Tamu Manual</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="grid grid-cols-1 sm:grid-cols-[2fr_2fr_1.5fr_auto] gap-2">
-            <Input
-              placeholder="Nama lengkap *"
-              value={nama}
-              onChange={(e) => setNama(e.target.value)}
-            />
-            <Input
-              placeholder="Alamat"
-              value={alamat}
-              onChange={(e) => setAlamat(e.target.value)}
-            />
-            <Input
-              placeholder="No. Telpon (08xxx)"
-              value={hp}
-              onChange={(e) => setHp(e.target.value)}
-            />
-            <Button onClick={tambahTamu}>Tambah</Button>
-          </div>
-          {tambahAlert.alert && (
-            <Alert variant={tambahAlert.alert.variant}>
-              <AlertDescription>{tambahAlert.alert.message}</AlertDescription>
-            </Alert>
-          )}
-        </CardContent>
-      </Card>
+      <div className="bento-grid">
+        <Card>
+          <CardHeader>
+            <CardTitle>Import dari Excel</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <p className="text-xs text-muted-foreground">
+              Kolom: <code className="bg-muted px-1 rounded text-xs">nama_lengkap</code>,{" "}
+              <code className="bg-muted px-1 rounded text-xs">alamat</code>,{" "}
+              <code className="bg-muted px-1 rounded text-xs">no_telpon</code> (opsional).
+            </p>
+            <div className="flex gap-2 flex-wrap items-center">
+              <Input type="file" accept=".xlsx,.xls" className="w-auto" onChange={handleImport} />
+              <Button variant="secondary" asChild>
+                <a href="/template-tamu.xlsx" download>
+                  Unduh Template
+                </a>
+              </Button>
+            </div>
+            {importAlert.alert && (
+              <Alert variant={importAlert.alert.variant}>
+                <AlertDescription>{importAlert.alert.message}</AlertDescription>
+              </Alert>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Tambah Manual</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="grid grid-cols-1 gap-2">
+              <Input
+                placeholder="Nama lengkap *"
+                value={nama}
+                onChange={(e) => setNama(e.target.value)}
+              />
+              <Input
+                placeholder="Alamat"
+                value={alamat}
+                onChange={(e) => setAlamat(e.target.value)}
+              />
+              <Input
+                placeholder="No. Telpon (08xxx)"
+                value={hp}
+                onChange={(e) => setHp(e.target.value)}
+              />
+              <Button onClick={tambahTamu} className="w-full">
+                Tambah Tamu
+              </Button>
+            </div>
+            {tambahAlert.alert && (
+              <Alert variant={tambahAlert.alert.variant}>
+                <AlertDescription>{tambahAlert.alert.message}</AlertDescription>
+              </Alert>
+            )}
+          </CardContent>
+        </Card>
+      </div>
 
       <Card>
         <CardHeader>
           <div className="flex justify-between items-center flex-wrap gap-2">
-            <CardTitle>Daftar Tamu</CardTitle>
-            <div className="flex gap-2 flex-wrap">
+            <CardTitle>
+              Daftar Tamu
+              <span className="ml-2 text-xs font-normal text-muted-foreground">
+                ({filtered.length}/{allTamu.length})
+              </span>
+            </CardTitle>
+            <div className="flex gap-2 flex-wrap items-center">
               <Input
                 placeholder="Cari nama..."
-                className="w-40"
+                className="w-36 sm:w-44"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
               <Select value={filterStatus} onValueChange={setFilterStatus}>
-                <SelectTrigger className="w-40">
+                <SelectTrigger className="w-36 sm:w-40">
                   <SelectValue placeholder="Semua Status" />
                 </SelectTrigger>
                 <SelectContent>
@@ -1339,13 +1525,13 @@ export default function TamuPage() {
         </CardHeader>
         <CardContent>
           {filtered.length === 0 ? (
-            <p className="text-center text-muted-foreground py-8 text-sm">Belum ada data tamu.</p>
+            <p className="text-center text-muted-foreground py-10 text-sm">Belum ada data tamu.</p>
           ) : (
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto scrollbar-thin">
               <table className="w-full text-sm border-collapse">
                 <thead>
-                  <tr className="bg-muted text-muted-foreground text-xs">
-                    <th className="px-3 py-2 text-left w-8">
+                  <tr className="bg-muted/60 text-muted-foreground text-xs">
+                    <th className="px-3 py-2 text-left w-8 rounded-tl-lg">
                       <input
                         type="checkbox"
                         onChange={(e) =>
@@ -1357,24 +1543,26 @@ export default function TamuPage() {
                     </th>
                     <th className="px-3 py-2 text-left">#</th>
                     <th className="px-3 py-2 text-left">Nama</th>
-                    <th className="px-3 py-2 text-left">Alamat</th>
+                    <th className="px-3 py-2 text-left hidden md:table-cell">Alamat</th>
                     <th className="px-3 py-2 text-left">No. Telpon</th>
-                    <th className="px-3 py-2 text-left">Status WA</th>
-                    <th className="px-3 py-2 text-left">Aksi</th>
+                    <th className="px-3 py-2 text-left">Status</th>
+                    <th className="px-3 py-2 text-left rounded-tr-lg">Aksi</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filtered.map((t, i) => (
                     <tr
                       key={t.id}
-                      className="border-b border-border hover:bg-muted/40 transition-colors"
+                      className="border-b border-border/50 hover:bg-muted/30 transition-colors duration-150"
                     >
                       <td className="px-3 py-2">
                         <input type="checkbox" className="row-check" data-id={t.id} />
                       </td>
-                      <td className="px-3 py-2 text-muted-foreground">{i + 1}</td>
+                      <td className="px-3 py-2 text-muted-foreground text-xs">{i + 1}</td>
                       <td className="px-3 py-2 font-semibold">{t.nama}</td>
-                      <td className="px-3 py-2 text-muted-foreground">{t.alamat || "—"}</td>
+                      <td className="px-3 py-2 text-muted-foreground hidden md:table-cell max-w-[180px] truncate">
+                        {t.alamat || "—"}
+                      </td>
                       <td className="px-3 py-2 text-muted-foreground">{t.no_telpon || "—"}</td>
                       <td className="px-3 py-2">
                         <StatusBadge status={t.broadcast_status as BroadcastStatus} />
@@ -1400,9 +1588,6 @@ export default function TamuPage() {
                   ))}
                 </tbody>
               </table>
-              <p className="text-xs text-muted-foreground mt-2">
-                Menampilkan {filtered.length} dari {allTamu.length} tamu
-              </p>
             </div>
           )}
         </CardContent>
@@ -1567,7 +1752,10 @@ const Card = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElemen
   ({ className, ...props }, ref) => (
     <div
       ref={ref}
-      className={cn("rounded-xl border bg-card text-card-foreground shadow-sm", className)}
+      className={cn(
+        "glass-card text-card-foreground transition-shadow duration-200 hover:shadow-lg scale-in",
+        className
+      )}
       {...props}
     />
   )
@@ -1893,7 +2081,10 @@ export function useFlashAlert(duration = 4000) {
 ---
 import "../styles/globals.css";
 
-const { title } = Astro.props;
+const {
+  title,
+  description = "Aplikasi manajemen undangan khitanan digital — kelola tamu, broadcast WhatsApp, dan kartu undangan dalam satu platform.",
+} = Astro.props;
 
 const NAV = [
   { href: "/", label: "Dashboard" },
@@ -1904,41 +2095,216 @@ const NAV = [
 ];
 
 const current = Astro.url.pathname;
+const siteUrl = import.meta.env.SITE_URL ?? "http://localhost:4000";
+const canonicalUrl = new URL(Astro.url.pathname, siteUrl).toString();
+const pageTitle = `${title} — Undangan Khitanan`;
 ---
 
 <!doctype html>
-<html lang="id">
+<html lang="id" class="scroll-smooth">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{title} — Undangan Khitanan</title>
+    <meta name="theme-color" content="#2d6a4f" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0a1a12" media="(prefers-color-scheme: dark)" />
+
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href={canonicalUrl} />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:site_name" content="Undangan Khitanan" />
+    <meta property="og:locale" content="id_ID" />
+
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:description" content={description} />
+
+    <meta name="application-name" content="Undangan Khitanan" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Khitanan" />
+    <meta name="mobile-web-app-capable" content="yes" />
+
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="icon" href="/icons/icon-192.png" type="image/png" sizes="192x192" />
+    <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800&display=swap"
+    />
+
+    <script is:inline>
+      (function () {
+        const stored = localStorage.getItem("theme");
+        const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+        if (stored === "dark" || (!stored && prefersDark)) {
+          document.documentElement.classList.add("dark");
+        }
+      })();
+    </script>
   </head>
-  <body>
-    <header class="bg-primary text-primary-foreground px-6 py-3.5 flex items-center gap-3">
-      <h1 class="text-sm font-bold tracking-wide">Undangan Khitanan</h1>
+
+  <body class="min-h-screen flex flex-col">
+    <header
+      class="nav-glass fixed top-0 left-0 right-0 z-50 h-14 flex items-center px-4 sm:px-6 gap-3"
+      role="banner"
+    >
+      <a href="/" class="flex items-center gap-2.5 shrink-0 mr-2" aria-label="Beranda">
+        <div class="w-7 h-7 rounded-lg bg-primary flex items-center justify-center shadow-sm">
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            class="text-primary-foreground"
+          >
+            <path
+              d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"></path>
+          </svg>
+        </div>
+        <span class="text-sm font-bold text-foreground hidden sm:block">Undangan Khitanan</span>
+        <span class="text-sm font-bold text-foreground sm:hidden">Khitanan</span>
+      </a>
+
+      <nav
+        class="flex-1 flex items-center overflow-x-auto scrollbar-thin gap-0.5"
+        role="navigation"
+        aria-label="Navigasi utama"
+      >
+        {
+          NAV.map(({ href, label }) => (
+            <a
+              href={href}
+              class={["nav-link", current === href ? "active" : ""].join(" ")}
+              aria-current={current === href ? "page" : undefined}
+            >
+              {label}
+            </a>
+          ))
+        }
+      </nav>
+
+      <div class="flex items-center gap-1.5 shrink-0">
+        <button
+          id="pwa-install-btn"
+          class="pwa-install-btn"
+          aria-label="Install aplikasi"
+          title="Install aplikasi"
+        >
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+            <path
+              d="M12 3v12m0 0l-4-4m4 4l4-4M3 17v2a2 2 0 002 2h14a2 2 0 002-2v-2"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"></path>
+          </svg>
+          Install
+        </button>
+
+        <button
+          id="theme-toggle"
+          class="theme-toggle"
+          aria-label="Toggle tema gelap terang"
+          title="Toggle tema"
+        >
+          <svg
+            id="icon-sun"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            class="hidden dark:block"
+          >
+            <circle cx="12" cy="12" r="5" stroke="currentColor" stroke-width="2"></circle>
+            <path
+              d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"></path>
+          </svg>
+          <svg
+            id="icon-moon"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            class="block dark:hidden"
+          >
+            <path
+              d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"></path>
+          </svg>
+        </button>
+      </div>
     </header>
 
-    <nav class="bg-card border-b border-border flex overflow-x-auto">
-      {
-        NAV.map(({ href, label }) => (
-          <a
-            href={href}
-            class={[
-              "px-5 py-3 text-xs font-semibold whitespace-nowrap border-b-2 transition-colors",
-              current === href
-                ? "text-primary border-primary"
-                : "text-muted-foreground border-transparent hover:bg-muted",
-            ].join(" ")}
-          >
-            {label}
-          </a>
-        ))
-      }
-    </nav>
-
-    <main class="max-w-5xl mx-auto px-5 py-6 space-y-4">
+    <main
+      class="flex-1 w-full max-w-5xl mx-auto px-4 sm:px-6 py-6 space-y-4 slide-up"
+      style="padding-top: calc(3.5rem + 1.5rem);"
+    >
       <slot />
     </main>
+
+    <footer class="mt-auto border-t border-border/50 py-4 px-4 sm:px-6" role="contentinfo">
+      <p class="text-center text-xs text-muted-foreground">
+        &copy; 2026 &mdash; Build With Love By
+        <span class="font-semibold text-primary">Yahya Zulfikri</span>
+      </p>
+    </footer>
+
+    <script is:inline>
+      const toggle = document.getElementById("theme-toggle");
+      toggle?.addEventListener("click", () => {
+        const isDark = document.documentElement.classList.toggle("dark");
+        localStorage.setItem("theme", isDark ? "dark" : "light");
+      });
+
+      let deferredPrompt = null;
+      const installBtn = document.getElementById("pwa-install-btn");
+
+      window.addEventListener("beforeinstallprompt", (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        installBtn?.classList.add("visible");
+      });
+
+      installBtn?.addEventListener("click", async () => {
+        if (!deferredPrompt) return;
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === "accepted") {
+          installBtn.classList.remove("visible");
+        }
+        deferredPrompt = null;
+      });
+
+      window.addEventListener("appinstalled", () => {
+        installBtn?.classList.remove("visible");
+        deferredPrompt = null;
+      });
+
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () => {
+          navigator.serviceWorker.register("/sw.js").catch(() => {});
+        });
+      }
+    </script>
   </body>
 </html>
 
@@ -2199,7 +2565,10 @@ await bootstrap();
 const event = (await q.getEvent()) ?? null;
 ---
 
-<Layout title="Setup Acara">
+<Layout
+  title="Setup Acara"
+  description="Isi data acara khitanan: nama anak, orang tua, tanggal, tempat, dan foto."
+>
   <AcaraPage event={event} client:load />
 </Layout>
 
@@ -2459,7 +2828,10 @@ const tamu = rawTamu
   .map((t) => ({ ...t, last_status: t.broadcast_status ?? null }));
 ---
 
-<Layout title="Broadcast WhatsApp">
+<Layout
+  title="Broadcast WhatsApp"
+  description="Kirim undangan khitanan massal via WhatsApp dengan template pesan yang dapat dikustomisasi."
+>
   <BroadcastPage event={event} tamu={tamu} client:load />
 </Layout>
 
@@ -2478,7 +2850,10 @@ const event = (await q.getEvent()) ?? null;
 const stats = await q.stats();
 ---
 
-<Layout title="Dashboard">
+<Layout
+  title="Dashboard"
+  description="Ringkasan data acara khitanan, statistik tamu, dan status broadcast WhatsApp."
+>
   <DashboardPage event={event} stats={stats} client:load />
 </Layout>
 
@@ -2497,7 +2872,10 @@ const event = (await q.getEvent()) ?? null;
 const tamu = (await q.listTamu()).map(({ id, nama, kartu_url }) => ({ id, nama, kartu_url }));
 ---
 
-<Layout title="Kartu Undangan">
+<Layout
+  title="Kartu Undangan"
+  description="Generate, preview, dan upload kartu undangan khitanan per tamu secara massal."
+>
   <KartuPage event={event} tamu={tamu} client:load />
 </Layout>
 
@@ -2511,7 +2889,10 @@ import Layout from "../layouts/Layout.astro";
 import TamuPage from "../components/pages/TamuPage";
 ---
 
-<Layout title="Tamu Undangan">
+<Layout
+  title="Tamu Undangan"
+  description="Kelola daftar tamu undangan khitanan — import Excel, tambah manual, edit, dan hapus."
+>
   <TamuPage client:load />
 </Layout>
 
@@ -2546,38 +2927,267 @@ export const GET: APIRoute = () => {
 
 ## src/styles/globals.css
 ```css
+@import url("https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800&display=swap");
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --background: 120 20% 97%;
-    --foreground: 150 20% 10%;
+    --background: 140 25% 97%;
+    --foreground: 150 25% 8%;
     --card: 0 0% 100%;
-    --card-foreground: 150 20% 10%;
-    --primary: 150 42% 30%;
+    --card-foreground: 150 25% 8%;
+    --primary: 150 45% 28%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 150 20% 94%;
-    --secondary-foreground: 150 42% 20%;
-    --muted: 150 10% 94%;
-    --muted-foreground: 150 10% 45%;
-    --accent: 150 30% 88%;
-    --accent-foreground: 150 42% 20%;
+    --secondary: 150 20% 92%;
+    --secondary-foreground: 150 45% 18%;
+    --muted: 150 12% 93%;
+    --muted-foreground: 150 10% 42%;
+    --accent: 150 32% 86%;
+    --accent-foreground: 150 45% 18%;
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
-    --border: 150 15% 88%;
-    --input: 150 15% 88%;
-    --ring: 150 42% 30%;
-    --radius: 0.625rem;
+    --border: 150 18% 87%;
+    --input: 150 18% 87%;
+    --ring: 150 45% 28%;
+    --radius: 0.75rem;
+    --glass-bg: rgba(255, 255, 255, 0.65);
+    --glass-border: rgba(255, 255, 255, 0.45);
+    --glass-shadow: 0 8px 32px rgba(27, 67, 50, 0.1);
+    --nav-height: 56px;
+  }
+
+  .dark {
+    --background: 160 20% 7%;
+    --foreground: 150 15% 92%;
+    --card: 160 18% 10%;
+    --card-foreground: 150 15% 92%;
+    --primary: 150 45% 48%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 160 18% 15%;
+    --secondary-foreground: 150 15% 85%;
+    --muted: 160 15% 14%;
+    --muted-foreground: 150 10% 55%;
+    --accent: 150 25% 20%;
+    --accent-foreground: 150 15% 85%;
+    --destructive: 0 65% 55%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 160 15% 18%;
+    --input: 160 15% 18%;
+    --ring: 150 45% 48%;
+    --glass-bg: rgba(10, 26, 18, 0.6);
+    --glass-border: rgba(255, 255, 255, 0.08);
+    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
   }
 
   * {
     @apply border-border;
   }
 
+  html {
+    scroll-behavior: smooth;
+  }
+
   body {
-    @apply bg-background text-foreground font-sans antialiased;
+    @apply bg-background text-foreground antialiased;
+    font-family: "Lexend", sans-serif;
+    font-weight: 400;
+    min-height: 100vh;
+    background-image: radial-gradient(
+      ellipse 80% 60% at 50% -10%,
+      hsl(var(--primary) / 0.08) 0%,
+      transparent 70%
+    );
+    background-attachment: fixed;
+  }
+
+  .dark body {
+    background-image: radial-gradient(
+      ellipse 80% 60% at 50% -10%,
+      hsl(var(--primary) / 0.12) 0%,
+      transparent 70%
+    );
+  }
+}
+
+@layer components {
+  .glass {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
+    backdrop-filter: blur(16px) saturate(1.4);
+    -webkit-backdrop-filter: blur(16px) saturate(1.4);
+  }
+
+  .glass-card {
+    @apply glass rounded-xl;
+  }
+
+  .nav-glass {
+    background: var(--glass-bg);
+    border-bottom: 1px solid var(--glass-border);
+    box-shadow: 0 2px 16px hsl(var(--primary) / 0.06);
+    backdrop-filter: blur(20px) saturate(1.5);
+    -webkit-backdrop-filter: blur(20px) saturate(1.5);
+  }
+
+  .bento-grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  }
+
+  .bento-grid-2 {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .bento-grid-4 {
+    display: grid;
+    gap: 0.75rem;
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  @media (max-width: 768px) {
+    .bento-grid-2 {
+      grid-template-columns: 1fr;
+    }
+    .bento-grid-4 {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: 480px) {
+    .bento-grid-4 {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  .fade-in {
+    animation: fadeIn 0.4s ease-out both;
+  }
+
+  .slide-up {
+    animation: slideUp 0.35s ease-out both;
+  }
+
+  .scale-in {
+    animation: scaleIn 0.3s ease-out both;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes scaleIn {
+    from {
+      opacity: 0;
+      transform: scale(0.97);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  .nav-link {
+    @apply relative px-4 py-2 text-xs font-semibold transition-colors duration-200 whitespace-nowrap;
+    color: hsl(var(--muted-foreground));
+  }
+
+  .nav-link:hover {
+    color: hsl(var(--primary));
+  }
+
+  .nav-link::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 0;
+    height: 2px;
+    background: hsl(var(--primary));
+    border-radius: 2px 2px 0 0;
+    transform: translateX(-50%);
+    transition: width 0.25s ease;
+  }
+
+  .nav-link.active {
+    color: hsl(var(--primary));
+    font-weight: 700;
+  }
+
+  .nav-link.active::after {
+    width: 60%;
+  }
+
+  .theme-toggle {
+    @apply relative inline-flex items-center justify-center w-9 h-9 rounded-lg transition-colors duration-200;
+    color: hsl(var(--muted-foreground));
+  }
+
+  .theme-toggle:hover {
+    @apply bg-accent;
+    color: hsl(var(--primary));
+  }
+
+  .pwa-install-btn {
+    @apply hidden items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200;
+    background: hsl(var(--primary) / 0.1);
+    color: hsl(var(--primary));
+    border: 1px solid hsl(var(--primary) / 0.2);
+  }
+
+  .pwa-install-btn:hover {
+    background: hsl(var(--primary) / 0.18);
+  }
+
+  .pwa-install-btn.visible {
+    @apply flex;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--border)) transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: hsl(var(--border));
+    border-radius: 4px;
   }
 }
 
@@ -2592,6 +3202,9 @@ export default {
   content: ["./src/**/*.{astro,html,js,jsx,ts,tsx}"],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ["Lexend", "sans-serif"],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -2627,6 +3240,9 @@ export default {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+      },
+      backdropBlur: {
+        xs: "2px",
       },
     },
   },
