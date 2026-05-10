@@ -1,0 +1,521 @@
+---
+// src/pages/tamu.astro
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout title="Tamu Undangan">
+  <!-- Import Excel -->
+  <div class="card">
+    <h2>📥 Import dari Excel</h2>
+    <p class="hint">
+      Kolom yang dikenali: <code>nama_lengkap</code>, <code>alamat</code>, <code>no_telpon</code> (opsional).
+      Baris tanpa nama akan dilewati.
+    </p>
+    <div class="import-row">
+      <input type="file" id="excel-file" accept=".xlsx,.xls" />
+      <button class="btn btn-success" id="btn-import">📤 Import</button>
+      <a href="/template-tamu.xlsx" class="btn btn-secondary" download>⬇️ Unduh Template</a>
+    </div>
+    <div id="import-result" class="alert" style="display:none"></div>
+  </div>
+
+  <!-- Tambah Manual -->
+  <div class="card">
+    <h2>➕ Tambah Tamu Manual</h2>
+    <div class="form-inline">
+      <input id="inp-nama" placeholder="Nama lengkap *" />
+      <input id="inp-alamat" placeholder="Alamat" />
+      <input id="inp-hp" placeholder="No. Telpon (08xxx)" />
+      <button class="btn btn-primary" id="btn-tambah">Tambah</button>
+    </div>
+    <div id="tambah-result" class="alert" style="display:none"></div>
+  </div>
+
+  <!-- Daftar Tamu -->
+  <div class="card">
+    <div class="table-header">
+      <h2>👥 Daftar Tamu</h2>
+      <div class="table-actions">
+        <input id="search" placeholder="🔍 Cari nama..." />
+        <select id="filter-status">
+          <option value="">Semua Status</option>
+          <option value="sent">✅ Terkirim</option>
+          <option value="failed">❌ Gagal</option>
+          <option value="null">⏳ Belum Kirim</option>
+        </select>
+        <button class="btn btn-danger btn-sm" id="btn-hapus-semua">🗑️ Hapus Semua</button>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table id="tabel-tamu">
+        <thead>
+          <tr>
+            <th><input type="checkbox" id="check-all" /></th>
+            <th>#</th>
+            <th>Nama</th>
+            <th>Alamat</th>
+            <th>No. Telpon</th>
+            <th>Status WA</th>
+            <th>Aksi</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+      <p id="empty-state" style="display:none;text-align:center;padding:32px;color:#999">
+        Belum ada data tamu.
+      </p>
+    </div>
+    <div id="tabel-info" class="tabel-info"></div>
+  </div>
+
+  <!-- Modal Edit -->
+  <div id="modal" class="modal-overlay" style="display:none">
+    <div class="modal-box">
+      <h3>✏️ Edit Tamu</h3>
+      <input type="hidden" id="edit-id" />
+      <div class="field"><label>Nama *</label><input id="edit-nama" /></div>
+      <div class="field"><label>Alamat</label><input id="edit-alamat" /></div>
+      <div class="field"><label>No. Telpon</label><input id="edit-hp" /></div>
+      <div class="modal-actions">
+        <button class="btn btn-primary" id="btn-save-edit">💾 Simpan</button>
+        <button class="btn btn-secondary" id="btn-cancel-edit">Batal</button>
+      </div>
+    </div>
+  </div>
+</Layout>
+
+<style>
+  .card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+    margin-bottom: 16px;
+  }
+  .card h2 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #2d6a4f;
+    margin-bottom: 12px;
+  }
+  .hint {
+    font-size: 0.8rem;
+    color: #888;
+    margin-bottom: 10px;
+  }
+  code {
+    background: #f0f4f0;
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-size: 0.78rem;
+  }
+
+  .import-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .form-inline {
+    display: grid;
+    grid-template-columns: 2fr 2fr 1.5fr auto;
+    gap: 10px;
+  }
+  @media (max-width: 640px) {
+    .form-inline {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  input[type="text"],
+  input:not([type="file"]):not([type="checkbox"]),
+  select {
+    padding: 9px 12px;
+    border: 1.5px solid #ddd;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    width: 100%;
+  }
+  input:focus,
+  select:focus {
+    outline: none;
+    border-color: #52b788;
+  }
+
+  .btn {
+    padding: 9px 16px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .btn-primary {
+    background: #2d6a4f;
+    color: #fff;
+  }
+  .btn-success {
+    background: #40916c;
+    color: #fff;
+  }
+  .btn-secondary {
+    background: #6c757d;
+    color: #fff;
+  }
+  .btn-danger {
+    background: #e63946;
+    color: #fff;
+  }
+  .btn-sm {
+    padding: 7px 12px;
+    font-size: 0.78rem;
+  }
+
+  .table-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .table-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .table-actions input,
+  .table-actions select {
+    width: auto;
+  }
+
+  .table-wrap {
+    overflow-x: auto;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+  }
+  th {
+    background: #f0f4f0;
+    padding: 10px 12px;
+    text-align: left;
+    font-size: 0.78rem;
+    color: #555;
+    font-weight: 700;
+  }
+  td {
+    padding: 10px 12px;
+    border-bottom: 1px solid #f0f0f0;
+    vertical-align: middle;
+  }
+  tr:hover td {
+    background: #f9fffe;
+  }
+
+  .badge {
+    padding: 3px 8px;
+    border-radius: 20px;
+    font-size: 0.73rem;
+    font-weight: 700;
+  }
+  .badge-sent {
+    background: #d8f3dc;
+    color: #1b4332;
+  }
+  .badge-failed {
+    background: #ffe0e0;
+    color: #9b1c1c;
+  }
+  .badge-pending {
+    background: #fff3cd;
+    color: #856404;
+  }
+  .badge-none {
+    background: #f0f0f0;
+    color: #888;
+  }
+
+  .tabel-info {
+    font-size: 0.78rem;
+    color: #888;
+    margin-top: 8px;
+  }
+
+  .alert {
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin-top: 10px;
+  }
+  .alert.success {
+    background: #d8f3dc;
+    color: #1b4332;
+  }
+  .alert.error {
+    background: #ffe0e0;
+    color: #9b1c1c;
+  }
+  .alert.info {
+    background: #e0f0ff;
+    color: #1a4f7a;
+  }
+
+  /* Modal */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+  }
+  .modal-box {
+    background: #fff;
+    border-radius: 14px;
+    padding: 24px;
+    width: 100%;
+    max-width: 420px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+  }
+  .modal-box h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #2d6a4f;
+    margin-bottom: 16px;
+  }
+  .field {
+    margin-bottom: 12px;
+  }
+  .field label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #555;
+    display: block;
+    margin-bottom: 4px;
+  }
+  .modal-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 16px;
+  }
+</style>
+
+<script>
+  let allTamu: any[] = [];
+
+  // ── Utils ──────────────────────────────────────────────
+  const $ = (id: string) => document.getElementById(id)!;
+  function showAlert(el: HTMLElement, msg: string, type: string, duration = 4000) {
+    el.textContent = msg;
+    el.className = `alert ${type}`;
+    el.style.display = "block";
+    if (duration)
+      setTimeout(() => {
+        el.style.display = "none";
+      }, duration);
+  }
+
+  const statusBadge = (s: string | null) => {
+    if (s === "sent") return '<span class="badge badge-sent">✅ Terkirim</span>';
+    if (s === "failed") return '<span class="badge badge-failed">❌ Gagal</span>';
+    if (s === "pending") return '<span class="badge badge-pending">⏳ Pending</span>';
+    return '<span class="badge badge-none">—</span>';
+  };
+
+  // ── Load & Render ──────────────────────────────────────
+  async function loadTamu() {
+    const res = await fetch("/api/tamu");
+    allTamu = await res.json();
+    renderTable(allTamu);
+  }
+
+  function renderTable(data: any[]) {
+    const tbody = $("tbody") as HTMLTableSectionElement;
+    const empty = $("empty-state");
+    const info = $("tabel-info");
+    tbody.innerHTML = "";
+
+    if (data.length === 0) {
+      empty.style.display = "block";
+      info.textContent = "";
+      return;
+    }
+    empty.style.display = "none";
+    info.textContent = `Menampilkan ${data.length} dari ${allTamu.length} tamu`;
+
+    data.forEach((t, i) => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td><input type="checkbox" class="row-check" data-id="${t.id}" /></td>
+        <td>${i + 1}</td>
+        <td><strong>${t.nama}</strong></td>
+        <td>${t.alamat || '<span style="color:#bbb">—</span>'}</td>
+        <td>${t.no_telpon || '<span style="color:#bbb">—</span>'}</td>
+        <td>${statusBadge(t.broadcast_status)}</td>
+        <td>
+          <button class="btn btn-secondary btn-sm" onclick="openEdit(${t.id})">✏️</button>
+          <button class="btn btn-danger btn-sm" onclick="hapusTamu(${t.id})">🗑️</button>
+        </td>`;
+      tbody.appendChild(tr);
+    });
+  }
+
+  // ── Filter & Search ────────────────────────────────────
+  function applyFilter() {
+    const q = ($("search") as HTMLInputElement).value.toLowerCase();
+    const status = ($("filter-status") as HTMLSelectElement).value;
+    const filtered = allTamu.filter((t) => {
+      const matchName = t.nama.toLowerCase().includes(q);
+      const matchStatus = !status
+        ? true
+        : status === "null"
+          ? !t.broadcast_status
+          : t.broadcast_status === status;
+      return matchName && matchStatus;
+    });
+    renderTable(filtered);
+  }
+  $("search").addEventListener("input", applyFilter);
+  $("filter-status").addEventListener("change", applyFilter);
+
+  // ── Check All ──────────────────────────────────────────
+  $("check-all").addEventListener("change", (e) => {
+    const checked = (e.target as HTMLInputElement).checked;
+    document.querySelectorAll(".row-check").forEach((cb: any) => (cb.checked = checked));
+  });
+
+  // ── Import Excel ───────────────────────────────────────
+  $("btn-import").addEventListener("click", async () => {
+    const fileInput = $("excel-file") as HTMLInputElement;
+    const resultEl = $("import-result");
+    const file = fileInput.files?.[0];
+    if (!file) {
+      showAlert(resultEl, "⚠️ Pilih file Excel terlebih dahulu.", "error");
+      return;
+    }
+
+    const fd = new FormData();
+    fd.append("file", file);
+
+    const btn = $("btn-import") as HTMLButtonElement;
+    btn.disabled = true;
+    btn.textContent = "Mengimport...";
+
+    try {
+      const res = await fetch("/api/tamu/import", { method: "POST", body: fd });
+      const data = await res.json();
+      if (data.ok) {
+        showAlert(
+          resultEl,
+          `✅ Berhasil import ${data.inserted} tamu. ${data.skipped ? `(${data.skipped} baris dilewati)` : ""}`,
+          "success"
+        );
+        fileInput.value = "";
+        await loadTamu();
+      } else {
+        showAlert(resultEl, `❌ ${data.error}`, "error");
+      }
+    } catch {
+      showAlert(resultEl, "❌ Terjadi kesalahan.", "error");
+    } finally {
+      btn.disabled = false;
+      btn.textContent = "📤 Import";
+    }
+  });
+
+  // ── Tambah Manual ──────────────────────────────────────
+  $("btn-tambah").addEventListener("click", async () => {
+    const nama = ($("inp-nama") as HTMLInputElement).value;
+    const alamat = ($("inp-alamat") as HTMLInputElement).value;
+    const hp = ($("inp-hp") as HTMLInputElement).value;
+    const result = $("tambah-result");
+
+    if (!nama.trim()) {
+      showAlert(result, "⚠️ Nama wajib diisi.", "error");
+      return;
+    }
+
+    const res = await fetch("/api/tamu", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ nama, alamat, no_telpon: hp }),
+    });
+    const data = await res.json();
+    if (data.ok) {
+      showAlert(result, "✅ Tamu berhasil ditambahkan.", "success");
+      ($("inp-nama") as HTMLInputElement).value = "";
+      ($("inp-alamat") as HTMLInputElement).value = "";
+      ($("inp-hp") as HTMLInputElement).value = "";
+      await loadTamu();
+    } else {
+      showAlert(result, `❌ ${data.error}`, "error");
+    }
+  });
+
+  // ── Hapus Satu ─────────────────────────────────────────
+  (window as any).hapusTamu = async (id: number) => {
+    if (!confirm("Hapus tamu ini?")) return;
+    await fetch(`/api/tamu?id=${id}`, { method: "DELETE" });
+    await loadTamu();
+  };
+
+  // ── Hapus Semua ────────────────────────────────────────
+  $("btn-hapus-semua").addEventListener("click", async () => {
+    const checked = Array.from(
+      document.querySelectorAll(".row-check:checked")
+    ) as HTMLInputElement[];
+    if (checked.length === 0) {
+      if (!confirm(`Hapus SEMUA ${allTamu.length} tamu?`)) return;
+      await Promise.all(allTamu.map((t) => fetch(`/api/tamu?id=${t.id}`, { method: "DELETE" })));
+    } else {
+      if (!confirm(`Hapus ${checked.length} tamu yang dipilih?`)) return;
+      await Promise.all(
+        checked.map((cb) => fetch(`/api/tamu?id=${cb.dataset.id}`, { method: "DELETE" }))
+      );
+    }
+    await loadTamu();
+  });
+
+  // ── Edit ───────────────────────────────────────────────
+  (window as any).openEdit = (id: number) => {
+    const t = allTamu.find((x) => x.id === id);
+    if (!t) return;
+    ($("edit-id") as HTMLInputElement).value = t.id;
+    ($("edit-nama") as HTMLInputElement).value = t.nama;
+    ($("edit-alamat") as HTMLInputElement).value = t.alamat ?? "";
+    ($("edit-hp") as HTMLInputElement).value = t.no_telpon ?? "";
+    $("modal").style.display = "flex";
+  };
+
+  $("btn-cancel-edit").addEventListener("click", () => {
+    $("modal").style.display = "none";
+  });
+
+  $("btn-save-edit").addEventListener("click", async () => {
+    const id = ($("edit-id") as HTMLInputElement).value;
+    const nama = ($("edit-nama") as HTMLInputElement).value;
+    const alamat = ($("edit-alamat") as HTMLInputElement).value;
+    const hp = ($("edit-hp") as HTMLInputElement).value;
+
+    const res = await fetch("/api/tamu", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, nama, alamat, no_telpon: hp }),
+    });
+    const data = await res.json();
+    if (data.ok) {
+      $("modal").style.display = "none";
+      await loadTamu();
+    }
+  });
+
+  // ── Init ───────────────────────────────────────────────
+  loadTamu();
+</script>

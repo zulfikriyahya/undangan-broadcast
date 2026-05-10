@@ -1,0 +1,92 @@
+---
+// src/layouts/Layout.astro
+const { title } = Astro.props;
+const nav = [
+  { href: "/", label: "🏠 Dashboard" },
+  { href: "/acara", label: "📋 Acara" },
+  { href: "/tamu", label: "👥 Tamu" },
+  { href: "/kartu", label: "🎴 Kartu" },
+  { href: "/broadcast", label: "📢 Broadcast" },
+];
+const current = Astro.url.pathname;
+---
+
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title} — Undangan Khitanan</title>
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: "Segoe UI", sans-serif;
+        background: #f0f4f0;
+        color: #333;
+      }
+      header {
+        background: linear-gradient(135deg, #2d6a4f, #52b788);
+        color: #fff;
+        padding: 14px 24px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      header h1 {
+        font-size: 1.1rem;
+        font-weight: 700;
+      }
+      nav {
+        background: #fff;
+        display: flex;
+        border-bottom: 2px solid #e0e0e0;
+        overflow-x: auto;
+      }
+      nav a {
+        padding: 12px 18px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #666;
+        text-decoration: none;
+        white-space: nowrap;
+        border-bottom: 3px solid transparent;
+      }
+      nav a.active {
+        color: #2d6a4f;
+        border-bottom-color: #2d6a4f;
+      }
+      nav a:hover {
+        background: #f5f5f5;
+      }
+      main {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 24px 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <span>🕌</span>
+      <h1>Undangan Khitanan</h1>
+    </header>
+    <nav>
+      {
+        nav.map((n) => (
+          <a href={n.href} class={current === n.href ? "active" : ""}>
+            {n.label}
+          </a>
+        ))
+      }
+    </nav>
+    <main>
+      <slot />
+    </main>
+  </body>
+</html>

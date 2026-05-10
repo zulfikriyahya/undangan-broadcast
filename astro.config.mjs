@@ -1,5 +1,8 @@
-// @ts-check
-import { defineConfig } from 'astro/config';
+// astro.config.mjs
+import node from "@astrojs/node";
+import { defineConfig } from "astro/config";
 
-// https://astro.build/config
-export default defineConfig({});
+export default defineConfig({
+  output: "server",
+  adapter: node({ mode: "standalone" }),
+});

@@ -1,0 +1,725 @@
+---
+// src/pages/broadcast.astro
+import Layout from "../layouts/Layout.astro";
+import db from "../lib/db";
+
+const event = db.prepare("SELECT * FROM event WHERE id = 1").get() as any;
+const tamu = db
+  .prepare(
+    `
+  SELECT t.*,
+    (SELECT status FROM broadcast WHERE tamu_id = t.id ORDER BY id DESC LIMIT 1) as last_status
+  FROM tamu t
+  WHERE t.no_telpon != '' AND t.no_telpon IS NOT NULL
+  ORDER BY t.nama ASC
+`
+  )
+  .all() as any[];
+---
+
+<Layout title="Broadcast WhatsApp">
+  {
+    !event && (
+      <div class="banner">
+        ⚠️ Data acara belum diisi. <a href="/acara">Setup dulu →</a>
+      </div>
+    )
+  }
+
+  <div class="grid-layout">
+    <!-- Kiri: Compose & Kirim -->
+    <div>
+      <!-- Template Pesan -->
+      <div class="card">
+        <h2>✍️ Compose Pesan</h2>
+
+        <div class="template-pills">
+          <span class="pill-label">Template cepat:</span>
+          <button class="pill" data-tpl="formal">Formal</button>
+          <button class="pill" data-tpl="santai">Santai</button>
+          <button class="pill" data-tpl="singkat">Singkat</button>
+        </div>
+
+        <div class="var-hint">
+          Variabel: <code set:html="{{nama}}" />
+          <code set:html="{{nama_anak}}" />
+          <code set:html="{{tanggal}}" />
+          <code set:html="{{alamat}}" />
+        </div>
+
+        <textarea id="pesan-template" rows="8" placeholder="Tulis pesan di sini..."></textarea>
+
+        <div class="preview-box">
+          <p class="preview-title">👁️ Preview pesan (contoh untuk tamu pertama)</p>
+          <pre id="pesan-preview"></pre>
+        </div>
+      </div>
+
+      <!-- Pilih Penerima -->
+      <div class="card">
+        <h2>👥 Pilih Penerima</h2>
+
+        <div class="filter-row">
+          <input id="search-tamu" placeholder="🔍 Cari nama..." />
+          <select id="filter-kirim">
+            <option value="">Semua</option>
+            <option value="belum">Belum Terkirim</option>
+            <option value="sent">Sudah Terkirim</option>
+            <option value="failed">Gagal</option>
+          </select>
+        </div>
+
+        <div class="check-all-row">
+          <label>
+            <input type="checkbox" id="check-all" />
+            <strong>Pilih Semua</strong>
+          </label>
+          <span id="selected-count" class="selected-count">0 dipilih</span>
+        </div>
+
+        <div id="tamu-list" class="tamu-list"></div>
+
+        <div id="no-hp-warning" class="alert info" style="display:none">
+          ⚠️ Tamu tanpa nomor HP tidak ditampilkan di sini.
+          <a href="/tamu">Lengkapi data →</a>
+        </div>
+      </div>
+
+      <!-- Tombol Kirim -->
+      <div class="card">
+        <button class="btn btn-wa btn-block" id="btn-broadcast"> 📢 Mulai Broadcast </button>
+
+        <!-- Progress -->
+        <div id="progress-wrap" style="display:none;margin-top:16px">
+          <div class="progress-bg"><div class="progress-fill" id="progress-fill"></div></div>
+          <p id="progress-label" class="progress-label"></p>
+          <div id="progress-log" class="progress-log"></div>
+          <button class="btn btn-danger btn-sm" id="btn-stop" style="margin-top:8px">⛔ Stop</button
+          >
+        </div>
+      </div>
+    </div>
+
+    <!-- Kanan: Riwayat -->
+    <div>
+      <div class="card">
+        <div
+          style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"
+        >
+          <h2 style="margin:0">📜 Riwayat Broadcast</h2>
+          <button class="btn btn-secondary btn-sm" id="btn-refresh-log">🔄 Refresh</button>
+        </div>
+        <div id="riwayat-list" class="riwayat-list"></div>
+      </div>
+    </div>
+  </div>
+</Layout>
+
+<script define:vars={{ event, tamu }}>
+  window.__EVENT__ = event;
+  window.__TAMU__ = tamu;
+</script>
+
+<script>
+  const ev = (window as any).__EVENT__;
+  const tamuAll = (window as any).__TAMU__ as any[];
+
+  // ── Template Pesan ──────────────────────────────────────────────────────────
+  const TEMPLATES: Record<string, string> = {
+    formal: `Assalamu'alaikum Wr. Wb.
+
+Kepada Yth. Bapak/Ibu/Saudara/i {{nama}}
+
+Dengan memohon Ridho Allah SWT, kami mengundang Bapak/Ibu/Saudara/i untuk hadir dalam acara Syukuran Khitanan putra kami:
+
+*{{nama_anak}}*
+
+📅 {{tanggal}}
+📍 {{alamat}}
+🎴 Kartu Undangan: {{kartu_url}}
+
+Kehadiran Bapak/Ibu/Saudara/i merupakan kehormatan dan kebahagiaan bagi kami.
+
+Wassalamu'alaikum Wr. Wb.`,
+
+    santai: `Halo {{nama}} 👋
+
+Kami dengan bahagia mengundang kamu ke acara khitanan putra kami *{{nama_anak}}*! 🎉
+
+📅 {{tanggal}}
+📍 {{alamat}}
+🎴 Kartu Undangan: {{kartu_url}}
+
+Yuk hadir, kita rayakan bersama! 🤲`,
+
+    singkat: `Assalamu'alaikum, {{nama}}.
+
+Kami mengundang ke acara Khitanan *{{nama_anak}}* pada {{tanggal}} di {{alamat}}.
+🎴 Kartu Undangan: {{kartu_url}}
+
+Mohon kehadiran Bapak/Ibu. Terima kasih 🙏`,
+  };
+
+  function resolveVars(template: string, nama: string, kartuUrl?: string): string {
+    const tgl = ev
+      ? new Date(ev.tanggal).toLocaleString("id-ID", { dateStyle: "full", timeStyle: "short" })
+      : "";
+    return template
+      .replace(/{{nama}}/g, nama)
+      .replace(/{{nama_anak}}/g, ev?.nama_anak ?? "")
+      .replace(/{{tanggal}}/g, tgl)
+      .replace(/{{alamat}}/g, ev?.alamat ?? "")
+      .replace(/{{kartu_url}}/g, kartuUrl ?? "(kartu belum di-upload)");
+  }
+
+  const pesanTA = document.getElementById("pesan-template") as HTMLTextAreaElement;
+  const pesanPrev = document.getElementById("pesan-preview") as HTMLPreElement;
+
+  function updatePreview() {
+    const sample = tamuAll[0]?.nama ?? "Budi Santoso";
+    pesanPrev.textContent = resolveVars(pesanTA.value, sample);
+  }
+
+  pesanTA.addEventListener("input", updatePreview);
+
+  // Template pills
+  document.querySelectorAll(".pill[data-tpl]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const key = (btn as HTMLElement).dataset.tpl!;
+      pesanTA.value = TEMPLATES[key] ?? "";
+      updatePreview();
+    });
+  });
+
+  // Default template
+  pesanTA.value = TEMPLATES.formal;
+  updatePreview();
+
+  // ── Render Daftar Tamu ──────────────────────────────────────────────────────
+  let filteredTamu = [...tamuAll];
+
+  function renderTamuList(data: any[]) {
+    const list = document.getElementById("tamu-list")!;
+    const warn = document.getElementById("no-hp-warning")!;
+
+    // Cek ada tamu tanpa HP
+    const tamuNoHp = (window as any).__TAMU_ALL_COUNT__ > tamuAll.length;
+    warn.style.display = tamuNoHp ? "block" : "none";
+
+    if (data.length === 0) {
+      list.innerHTML =
+        '<p style="color:#aaa;font-size:.85rem;padding:8px">Tidak ada tamu ditemukan.</p>';
+      updateSelectedCount();
+      return;
+    }
+
+    list.innerHTML = data
+      .map(
+        (t) => `
+    <label class="tamu-item ${t.last_status === "sent" ? "sent" : ""}">
+
+
+<input type="checkbox" class="tamu-check"
+  data-id="${t.id}"
+  data-nama="${t.nama}"
+  data-kartu-url="${t.kartu_url ?? ""}"   // ← tambah ini
+/>
+      <div class="tamu-info">
+        <strong>${t.nama}</strong>
+        <span>${t.no_telpon}</span>
+      </div>
+      ${statusTag(t.last_status)}
+    </label>
+  `
+      )
+      .join("");
+
+    document
+      .querySelectorAll(".tamu-check")
+      .forEach((cb) => cb.addEventListener("change", updateSelectedCount));
+    updateSelectedCount();
+  }
+
+  function statusTag(s: string | null) {
+    if (s === "sent") return '<span class="badge badge-sent">✅ Terkirim</span>';
+    if (s === "failed") return '<span class="badge badge-failed">❌ Gagal</span>';
+    if (s === "pending") return '<span class="badge badge-pending">⏳ Pending</span>';
+    return '<span class="badge badge-none">Belum</span>';
+  }
+
+  function updateSelectedCount() {
+    const n = document.querySelectorAll(".tamu-check:checked").length;
+    document.getElementById("selected-count")!.textContent = `${n} dipilih`;
+  }
+
+  // Filter & Search
+  function applyFilter() {
+    const q = (document.getElementById("search-tamu") as HTMLInputElement).value.toLowerCase();
+    const status = (document.getElementById("filter-kirim") as HTMLSelectElement).value;
+    filteredTamu = tamuAll.filter((t) => {
+      const matchName = t.nama.toLowerCase().includes(q);
+      const matchStatus = !status
+        ? true
+        : status === "belum"
+          ? !t.last_status || t.last_status === "failed"
+          : status === "sent"
+            ? t.last_status === "sent"
+            : status === "failed"
+              ? t.last_status === "failed"
+              : true;
+      return matchName && matchStatus;
+    });
+    renderTamuList(filteredTamu);
+  }
+
+  document.getElementById("search-tamu")!.addEventListener("input", applyFilter);
+  document.getElementById("filter-kirim")!.addEventListener("change", applyFilter);
+
+  // Check all
+  document.getElementById("check-all")!.addEventListener("change", (e) => {
+    const checked = (e.target as HTMLInputElement).checked;
+    document.querySelectorAll(".tamu-check").forEach((cb: any) => (cb.checked = checked));
+    updateSelectedCount();
+  });
+
+  renderTamuList(tamuAll);
+
+  // ── Broadcast ───────────────────────────────────────────────────────────────
+  let stopFlag = false;
+
+  document.getElementById("btn-stop")!.addEventListener("click", () => {
+    stopFlag = true;
+  });
+
+  document.getElementById("btn-broadcast")!.addEventListener("click", async () => {
+    const selected = Array.from(
+      document.querySelectorAll(".tamu-check:checked")
+    ) as HTMLInputElement[];
+
+    if (!selected.length) {
+      alert("Pilih minimal 1 tamu.");
+      return;
+    }
+    if (!pesanTA.value.trim()) {
+      alert("Tulis pesan terlebih dahulu.");
+      return;
+    }
+    if (!confirm(`Kirim pesan ke ${selected.length} tamu?`)) return;
+
+    stopFlag = false;
+    const btn = document.getElementById("btn-broadcast") as HTMLButtonElement;
+    const progressWrap = document.getElementById("progress-wrap")!;
+    const progressFill = document.getElementById("progress-fill")! as HTMLElement;
+    const progressLbl = document.getElementById("progress-label")!;
+    const progressLog = document.getElementById("progress-log")!;
+
+    btn.disabled = true;
+    progressWrap.style.display = "block";
+    progressLog.innerHTML = "";
+
+    let sent = 0,
+      failed = 0;
+
+    for (let i = 0; i < selected.length; i++) {
+      if (stopFlag) {
+        progressLbl.textContent = `⛔ Dihentikan pada tamu ke-${i + 1}.`;
+        break;
+      }
+
+      const id = selected[i].dataset.id!;
+      // Di loop broadcast, ubah:
+      const nama = selected[i].dataset.nama!;
+      const kartuUrl = selected[i].dataset.kartuUrl ?? ""; // ← tambah
+      const pesan = resolveVars(pesanTA.value, nama, kartuUrl); // ← pass kartuUrl
+
+      progressLbl.textContent = `Mengirim ${i + 1}/${selected.length}: ${nama}...`;
+      progressFill.style.width = `${Math.round(((i + 1) / selected.length) * 100)}%`;
+
+      try {
+        const res = await fetch("/api/broadcast", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ tamu_id: parseInt(id), pesan }),
+        });
+        const data = await res.json();
+
+        if (data.ok) {
+          sent++;
+          addLog(progressLog, `✅ ${nama}`, "success");
+        } else {
+          failed++;
+          addLog(progressLog, `❌ ${nama} — ${data.error ?? "Gagal"}`, "error");
+        }
+      } catch {
+        failed++;
+        addLog(progressLog, `❌ ${nama} — Network error`, "error");
+      }
+
+      // Delay 2.5 detik antar kirim
+      if (i < selected.length - 1 && !stopFlag) {
+        await new Promise((r) => setTimeout(r, 2500));
+      }
+    }
+
+    if (!stopFlag) {
+      progressLbl.textContent = `✅ Selesai! ${sent} terkirim, ${failed} gagal.`;
+    }
+
+    btn.disabled = false;
+    loadRiwayat();
+  });
+
+  function addLog(container: HTMLElement, msg: string, type: string) {
+    const p = document.createElement("p");
+    p.textContent = msg;
+    p.className = `log-item log-${type}`;
+    container.prepend(p);
+  }
+
+  // ── Riwayat ──────────────────────────────────────────────────────────────────
+  async function loadRiwayat() {
+    const res = await fetch("/api/broadcast");
+    const rows = (await res.json()) as any[];
+    const list = document.getElementById("riwayat-list")!;
+
+    if (!rows.length) {
+      list.innerHTML = '<p style="color:#aaa;font-size:.85rem">Belum ada riwayat.</p>';
+      return;
+    }
+
+    list.innerHTML = rows
+      .map(
+        (r) => `
+    <div class="riwayat-item">
+      <div class="riwayat-top">
+        <strong>${r.nama}</strong>
+        ${statusTag(r.status)}
+      </div>
+      <p class="riwayat-hp">${r.no_telpon}</p>
+      <p class="riwayat-pesan">${r.pesan.substring(0, 80)}${r.pesan.length > 80 ? "..." : ""}</p>
+      <p class="riwayat-time">${r.sent_at ?? r.status}</p>
+    </div>
+  `
+      )
+      .join("");
+  }
+
+  document.getElementById("btn-refresh-log")!.addEventListener("click", loadRiwayat);
+  loadRiwayat();
+</script>
+
+<style>
+  .banner {
+    background: #fff3cd;
+    border: 1px solid #ffc107;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    font-size: 0.875rem;
+  }
+  .banner a {
+    color: #2d6a4f;
+    font-weight: 700;
+  }
+  .card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+    margin-bottom: 16px;
+  }
+  .card h2 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #2d6a4f;
+    margin-bottom: 12px;
+  }
+
+  .grid-layout {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 16px;
+  }
+  @media (max-width: 800px) {
+    .grid-layout {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .template-pills {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+  }
+  .pill-label {
+    font-size: 0.78rem;
+    color: #888;
+    font-weight: 600;
+  }
+  .pill {
+    padding: 4px 12px;
+    border: 1.5px solid #52b788;
+    border-radius: 99px;
+    background: #fff;
+    color: #2d6a4f;
+    font-size: 0.78rem;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .pill:hover {
+    background: #e9f5ee;
+  }
+
+  .var-hint {
+    font-size: 0.75rem;
+    color: #888;
+    margin-bottom: 8px;
+  }
+  code {
+    background: #f0f4f0;
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-size: 0.73rem;
+  }
+
+  textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1.5px solid #ddd;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-family: inherit;
+    resize: vertical;
+  }
+  textarea:focus {
+    outline: none;
+    border-color: #52b788;
+  }
+
+  .preview-box {
+    background: #f9fffe;
+    border: 1px solid #b7e4c7;
+    border-radius: 8px;
+    padding: 12px;
+    margin-top: 10px;
+  }
+  .preview-title {
+    font-size: 0.75rem;
+    color: #52b788;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  pre {
+    font-family: inherit;
+    font-size: 0.8rem;
+    color: #333;
+    white-space: pre-wrap;
+    word-break: break-word;
+    margin: 0;
+  }
+
+  .filter-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .filter-row input,
+  .filter-row select {
+    flex: 1;
+    padding: 8px 10px;
+    border: 1.5px solid #ddd;
+    border-radius: 8px;
+    font-size: 0.85rem;
+  }
+  .filter-row input:focus,
+  .filter-row select:focus {
+    outline: none;
+    border-color: #52b788;
+  }
+
+  .check-all-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 0;
+    border-bottom: 1px solid #f0f0f0;
+    margin-bottom: 8px;
+    font-size: 0.85rem;
+  }
+  .selected-count {
+    font-size: 0.78rem;
+    color: #52b788;
+    font-weight: 700;
+  }
+
+  .tamu-list {
+    max-height: 320px;
+    overflow-y: auto;
+  }
+  .tamu-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 6px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+  }
+  .tamu-item:hover {
+    background: #f5faf7;
+  }
+  .tamu-item.sent {
+    opacity: 0.6;
+  }
+  .tamu-info {
+    flex: 1;
+  }
+  .tamu-info strong {
+    display: block;
+  }
+  .tamu-info span {
+    font-size: 0.75rem;
+    color: #888;
+  }
+
+  .badge {
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  .badge-sent {
+    background: #d8f3dc;
+    color: #1b4332;
+  }
+  .badge-failed {
+    background: #ffe0e0;
+    color: #9b1c1c;
+  }
+  .badge-pending {
+    background: #fff3cd;
+    color: #856404;
+  }
+  .badge-none {
+    background: #f0f0f0;
+    color: #888;
+  }
+
+  .btn {
+    padding: 9px 16px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+  .btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  .btn-block {
+    width: 100%;
+    padding: 12px;
+    font-size: 1rem;
+  }
+  .btn-wa {
+    background: #25d366;
+    color: #fff;
+  }
+  .btn-wa:hover:not(:disabled) {
+    background: #1ebe5d;
+  }
+  .btn-secondary {
+    background: #6c757d;
+    color: #fff;
+  }
+  .btn-danger {
+    background: #e63946;
+    color: #fff;
+  }
+  .btn-sm {
+    padding: 6px 12px;
+    font-size: 0.78rem;
+  }
+
+  .progress-bg {
+    background: #e0e0e0;
+    border-radius: 99px;
+    height: 10px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    background: linear-gradient(90deg, #25d366, #1ebe5d);
+    height: 100%;
+    width: 0%;
+    transition: width 0.3s;
+    border-radius: 99px;
+  }
+  .progress-label {
+    font-size: 0.8rem;
+    color: #555;
+    margin-top: 6px;
+  }
+  .progress-log {
+    max-height: 160px;
+    overflow-y: auto;
+    margin-top: 8px;
+  }
+  .log-item {
+    font-size: 0.78rem;
+    padding: 3px 0;
+    border-bottom: 1px solid #f5f5f5;
+  }
+  .log-success {
+    color: #1b4332;
+  }
+  .log-error {
+    color: #9b1c1c;
+  }
+
+  .alert.info {
+    background: #e0f0ff;
+    color: #1a4f7a;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 0.82rem;
+  }
+  .alert.info a {
+    color: #2d6a4f;
+    font-weight: 700;
+  }
+
+  .riwayat-list {
+    max-height: 560px;
+    overflow-y: auto;
+  }
+  .riwayat-item {
+    padding: 10px 0;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  .riwayat-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 3px;
+  }
+  .riwayat-hp {
+    font-size: 0.75rem;
+    color: #888;
+  }
+  .riwayat-pesan {
+    font-size: 0.78rem;
+    color: #555;
+    margin-top: 3px;
+    white-space: pre-wrap;
+  }
+  .riwayat-time {
+    font-size: 0.72rem;
+    color: #bbb;
+    margin-top: 2px;
+  }
+</style>
