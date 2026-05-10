@@ -282,7 +282,7 @@ export default function AcaraPage({ event }: Props) {
                     name="nama_anak"
                     required
                     defaultValue={event?.nama_anak ?? ""}
-                    placeholder="Muhammad Farhan"
+                    placeholder="Nama Anak"
                   />
                 </Field>
 
@@ -303,7 +303,7 @@ export default function AcaraPage({ event }: Props) {
                     name="nama_bapak"
                     required
                     defaultValue={event?.nama_bapak ?? ""}
-                    placeholder="Ahmad Fauzi"
+                    placeholder="Yahya Zulfikri"
                   />
                 </Field>
 
@@ -313,7 +313,7 @@ export default function AcaraPage({ event }: Props) {
                     name="nama_ibu"
                     required
                     defaultValue={event?.nama_ibu ?? ""}
-                    placeholder="Siti Rahayu"
+                    placeholder="Fera Oktapia"
                   />
                 </Field>
               </div>

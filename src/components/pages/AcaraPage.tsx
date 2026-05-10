@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
-import type { Event } from "../../lib/db";
 import { useFlashAlert } from "../../hooks/useFlashAlert";
+import type { Event } from "../../lib/db";
 import { Alert, AlertDescription } from "../ui/alert";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
@@ -90,7 +90,7 @@ export default function AcaraPage({ event }: Props) {
                     name="nama_anak"
                     required
                     defaultValue={event?.nama_anak ?? ""}
-                    placeholder="Muhammad Farhan"
+                    placeholder="Nama Anak"
                   />
                 </Field>
 
@@ -111,7 +111,7 @@ export default function AcaraPage({ event }: Props) {
                     name="nama_bapak"
                     required
                     defaultValue={event?.nama_bapak ?? ""}
-                    placeholder="Ahmad Fauzi"
+                    placeholder="Yahya Zulfikri"
                   />
                 </Field>
 
@@ -121,7 +121,7 @@ export default function AcaraPage({ event }: Props) {
                     name="nama_ibu"
                     required
                     defaultValue={event?.nama_ibu ?? ""}
-                    placeholder="Siti Rahayu"
+                    placeholder="Fera Oktapia"
                   />
                 </Field>
               </div>
@@ -149,7 +149,7 @@ export default function AcaraPage({ event }: Props) {
                   name="alamat"
                   required
                   defaultValue={event?.alamat ?? ""}
-                  placeholder="Jl. Mawar No. 12, RT 03/05, Kel. Cipete"
+                  placeholder="Kp. Kebon Cau RT 001 RW 005, Kelurahan Pandeglang, Kecamatan Pandeglang, Kabupaten Pandeglang, Banten 42211"
                 />
               </Field>
             </CardContent>
