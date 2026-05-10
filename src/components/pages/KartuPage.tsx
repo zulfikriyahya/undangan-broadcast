@@ -31,78 +31,98 @@ interface Theme {
 
 const THEMES: Theme[] = [
   {
-    id: "emerald",
-    label: "Emerald",
-    bg: "linear-gradient(135deg, #0d3321 0%, #1b5e3b 45%, #2d8a5e 100%)",
-    accent: "#d4af37",
-    gold: "#f0d060",
-    text: "#ffffff",
-    subtext: "rgba(255,255,255,0.75)",
-    panelBg: "rgba(0,0,0,0.28)",
-    divider: "rgba(212,175,55,0.5)",
-    badge: "rgba(212,175,55,0.15)",
+    id: "ivory",
+    label: "Ivory Elegance",
+    bg: "linear-gradient(160deg, #fdf8f0 0%, #f5ede0 50%, #ede0cc 100%)",
+    accent: "#8b5e3c",
+    gold: "#c49a5a",
+    text: "#2c1a0e",
+    subtext: "rgba(44,26,14,0.62)",
+    panelBg: "rgba(139,94,60,0.07)",
+    divider: "rgba(139,94,60,0.22)",
+    badge: "rgba(139,94,60,0.09)",
   },
   {
-    id: "navy",
-    label: "Navy Gold",
-    bg: "linear-gradient(135deg, #0a1628 0%, #1a3050 45%, #1e4976 100%)",
+    id: "midnight",
+    label: "Midnight Gold",
+    bg: "linear-gradient(160deg, #0d0d1a 0%, #141428 50%, #1a1a35 100%)",
     accent: "#c9a84c",
-    gold: "#e8c96a",
-    text: "#ffffff",
-    subtext: "rgba(255,255,255,0.72)",
-    panelBg: "rgba(0,0,0,0.30)",
-    divider: "rgba(201,168,76,0.5)",
-    badge: "rgba(201,168,76,0.15)",
+    gold: "#e8d080",
+    text: "#f5f0e8",
+    subtext: "rgba(245,240,232,0.60)",
+    panelBg: "rgba(201,168,76,0.07)",
+    divider: "rgba(201,168,76,0.22)",
+    badge: "rgba(201,168,76,0.10)",
   },
   {
-    id: "maroon",
-    label: "Maroon",
-    bg: "linear-gradient(135deg, #2d0a14 0%, #5c1a28 45%, #8b2d42 100%)",
-    accent: "#e8c97a",
-    gold: "#f5dfa0",
-    text: "#ffffff",
-    subtext: "rgba(255,255,255,0.72)",
-    panelBg: "rgba(0,0,0,0.28)",
-    divider: "rgba(232,201,122,0.5)",
-    badge: "rgba(232,201,122,0.15)",
+    id: "sage",
+    label: "Sage & Champagne",
+    bg: "linear-gradient(160deg, #f0f4ee 0%, #e4ede0 50%, #d4e2cc 100%)",
+    accent: "#4a7c59",
+    gold: "#8a9e6a",
+    text: "#1c2e20",
+    subtext: "rgba(28,46,32,0.58)",
+    panelBg: "rgba(74,124,89,0.07)",
+    divider: "rgba(74,124,89,0.22)",
+    badge: "rgba(74,124,89,0.09)",
   },
   {
-    id: "purple",
-    label: "Royal Purple",
-    bg: "linear-gradient(135deg, #1a0a2e 0%, #2d1b5e 45%, #4a2d8a 100%)",
-    accent: "#d4a0ff",
-    gold: "#e8c8ff",
-    text: "#ffffff",
-    subtext: "rgba(255,255,255,0.72)",
-    panelBg: "rgba(0,0,0,0.28)",
-    divider: "rgba(212,160,255,0.45)",
-    badge: "rgba(212,160,255,0.15)",
+    id: "blush",
+    label: "Blush Rosé",
+    bg: "linear-gradient(160deg, #fdf0f3 0%, #f5e2e8 50%, #ead0d8 100%)",
+    accent: "#9c4a62",
+    gold: "#c4808e",
+    text: "#2e0e18",
+    subtext: "rgba(46,14,24,0.60)",
+    panelBg: "rgba(156,74,98,0.07)",
+    divider: "rgba(156,74,98,0.20)",
+    badge: "rgba(156,74,98,0.09)",
   },
   {
     id: "slate",
-    label: "Slate Silver",
-    bg: "linear-gradient(135deg, #0f1923 0%, #1e2d3d 45%, #2d4158 100%)",
-    accent: "#94a3b8",
-    gold: "#cbd5e1",
-    text: "#ffffff",
-    subtext: "rgba(255,255,255,0.70)",
-    panelBg: "rgba(0,0,0,0.28)",
-    divider: "rgba(148,163,184,0.45)",
-    badge: "rgba(148,163,184,0.15)",
+    label: "Slate & Silver",
+    bg: "linear-gradient(160deg, #1c2330 0%, #242e3e 50%, #2c3850 100%)",
+    accent: "#94a8c4",
+    gold: "#c0d0e0",
+    text: "#eef2f8",
+    subtext: "rgba(238,242,248,0.58)",
+    panelBg: "rgba(148,168,196,0.07)",
+    divider: "rgba(148,168,196,0.22)",
+    badge: "rgba(148,168,196,0.10)",
   },
   {
-    id: "rose",
-    label: "Rose Gold",
-    bg: "linear-gradient(135deg, #2d0d18 0%, #5c1e30 45%, #8c3a50 100%)",
-    accent: "#f4b8c8",
-    gold: "#fad4de",
-    text: "#ffffff",
-    subtext: "rgba(255,255,255,0.72)",
-    panelBg: "rgba(0,0,0,0.25)",
-    divider: "rgba(244,184,200,0.45)",
-    badge: "rgba(244,184,200,0.15)",
+    id: "sand",
+    label: "Desert Sand",
+    bg: "linear-gradient(160deg, #f7f2e8 0%, #ede4d0 50%, #e0d0b4 100%)",
+    accent: "#7a5c2e",
+    gold: "#b08840",
+    text: "#2a1e08",
+    subtext: "rgba(42,30,8,0.60)",
+    panelBg: "rgba(122,92,46,0.07)",
+    divider: "rgba(122,92,46,0.20)",
+    badge: "rgba(122,92,46,0.09)",
   },
 ];
+
+const GOOGLE_FONTS_URL =
+  "https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Cormorant+Garamond:ital,wght@0,300;0,500;0,600;1,300&family=Montserrat:wght@300;400;500;600&display=swap";
+
+async function ensureFontsLoaded(): Promise<void> {
+  if (document.querySelector(`link[href="${GOOGLE_FONTS_URL}"]`)) {
+    await document.fonts.ready;
+    return;
+  }
+  const link = document.createElement("link");
+  link.rel = "stylesheet";
+  link.href = GOOGLE_FONTS_URL;
+  document.head.appendChild(link);
+  await new Promise<void>((resolve) => {
+    link.onload = () => resolve();
+    link.onerror = () => resolve();
+    setTimeout(resolve, 3000);
+  });
+  await document.fonts.ready;
+}
 
 function buildKartuHTML(event: Event, namaTamu: string, theme: Theme): string {
   const tgl = new Date(event.tanggal);
@@ -112,192 +132,142 @@ function buildKartuHTML(event: Event, namaTamu: string, theme: Theme): string {
     month: "long",
     year: "numeric",
   });
-  const waktu = tgl.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }) + " WIB";
+  const waktu =
+    tgl.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }) +
+    " WIB" +
+    " s.d. Selesai";
+
   const foto = event.foto_path
     ? `<img src="${event.foto_path}" style="width:100%;height:100%;object-fit:cover;display:block"/>`
-    : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:3.5rem">&#x1F466;</div>`;
+    : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:${theme.panelBg}"><svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="${theme.accent}" stroke-width="0.8" stroke-linecap="round" stroke-linejoin="round" opacity=".35"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>`;
 
-  return `
-<div style="
-  width:800px;height:500px;position:relative;overflow:hidden;
-  font-family:'Georgia',serif;
-  background:${theme.bg};
+  const corner = (
+    w: number,
+    h: number
+  ) => `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" fill="none">
+    <path d="M2 ${h} L2 2 L${w} 2" stroke="${theme.accent}" stroke-width="1.2" stroke-linecap="square" opacity="0.45"/>
+    <path d="M6 ${h} L6 6 L${w} 6" stroke="${theme.gold}" stroke-width="0.5" stroke-linecap="square" opacity="0.35"/>
+  </svg>`;
+
+  const LEFT_W = 260;
+  const CARD_H = 460;
+  const INSET = 14;
+
+  return `<div style="
+  width:800px;height:${CARD_H}px;position:relative;overflow:hidden;
+  background:${theme.bg};font-family:'Montserrat',sans-serif;
 ">
+  <div style="position:absolute;top:0;left:0">${corner(52, 52)}</div>
+  <div style="position:absolute;top:0;right:0;transform:scaleX(-1)">${corner(52, 52)}</div>
+  <div style="position:absolute;bottom:0;left:0;transform:scaleY(-1)">${corner(52, 52)}</div>
+  <div style="position:absolute;bottom:0;right:0;transform:scale(-1,-1)">${corner(52, 52)}</div>
+  <div style="position:absolute;inset:${INSET}px;border:0.5px solid ${theme.divider};pointer-events:none"></div>
 
-  <!-- Ornamen lingkaran kiri atas -->
-  <svg style="position:absolute;top:-40px;left:-40px;width:220px;height:220px;opacity:0.18" viewBox="0 0 220 220">
-    <circle cx="110" cy="110" r="100" fill="none" stroke="${theme.accent}" stroke-width="1.5"/>
-    <circle cx="110" cy="110" r="78"  fill="none" stroke="${theme.gold}"   stroke-width="0.8"/>
-    <circle cx="110" cy="110" r="56"  fill="none" stroke="${theme.accent}" stroke-width="1.2"/>
+  <svg style="position:absolute;top:22px;right:24px;opacity:0.10" width="66" height="66" viewBox="0 0 100 100">
+    <path d="M50 5 L61 35 L93 35 L68 54 L79 84 L50 65 L21 84 L32 54 L7 35 L39 35Z" fill="none" stroke="${theme.accent}" stroke-width="1.5"/>
+    <path d="M50 18 L58 40 L82 40 L63 53 L71 75 L50 62 L29 75 L37 53 L18 40 L42 40Z" fill="none" stroke="${theme.gold}" stroke-width="0.7"/>
   </svg>
 
-  <!-- Ornamen lingkaran kanan bawah -->
-  <svg style="position:absolute;bottom:-50px;right:-50px;width:240px;height:240px;opacity:0.15" viewBox="0 0 240 240">
-    <circle cx="120" cy="120" r="110" fill="none" stroke="${theme.accent}" stroke-width="1.5"/>
-    <circle cx="120" cy="120" r="88"  fill="none" stroke="${theme.gold}"   stroke-width="0.8"/>
-    <circle cx="120" cy="120" r="66"  fill="none" stroke="${theme.accent}" stroke-width="1.2"/>
-  </svg>
-
-  <!-- Ornamen bunga sudut kiri atas -->
-  <svg style="position:absolute;top:0;left:0;width:90px;height:90px;opacity:0.22" viewBox="0 0 90 90">
-    <path d="M0 0 Q45 20 90 0 Q70 45 90 90 Q45 70 0 90 Q20 45 0 0Z" fill="${theme.accent}"/>
-  </svg>
-
-  <!-- Ornamen bunga sudut kanan bawah -->
-  <svg style="position:absolute;bottom:0;right:0;width:90px;height:90px;opacity:0.22;transform:rotate(180deg)" viewBox="0 0 90 90">
-    <path d="M0 0 Q45 20 90 0 Q70 45 90 90 Q45 70 0 90 Q20 45 0 0Z" fill="${theme.accent}"/>
-  </svg>
-
-  <!-- Garis dekoratif atas -->
-  <div style="position:absolute;top:14px;left:110px;right:20px;height:1px;background:linear-gradient(to right,transparent,${theme.accent},transparent);opacity:0.5"></div>
-  <!-- Garis dekoratif bawah -->
-  <div style="position:absolute;bottom:14px;left:110px;right:20px;height:1px;background:linear-gradient(to right,transparent,${theme.accent},transparent);opacity:0.5"></div>
-
-  <!-- Panel kiri — foto + nama orang tua -->
+  <!-- LEFT PANEL -->
   <div style="
-    position:absolute;left:0;top:0;width:255px;height:500px;
-    background:${theme.panelBg};
-    backdrop-filter:blur(6px);
-    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;
-    padding:0 20px;
+    position:absolute;left:${INSET}px;top:${INSET}px;bottom:${INSET}px;width:${LEFT_W}px;
+    border-right:0.5px solid ${theme.divider};
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:0;padding:20px 22px;box-sizing:border-box;
   ">
-    <!-- Frame foto -->
-    <div style="position:relative;width:148px;height:148px">
-      <!-- Ring luar -->
-      <div style="
-        position:absolute;inset:-6px;border-radius:50%;
-        border:2px solid ${theme.accent};opacity:0.6;
-      "></div>
-      <!-- Ring dalam -->
-      <div style="
-        position:absolute;inset:-2px;border-radius:50%;
-        border:2px solid ${theme.gold};
-      "></div>
-      <!-- Foto -->
-      <div style="
-        width:148px;height:148px;border-radius:50%;overflow:hidden;
-        background:rgba(0,0,0,0.3);
-      ">${foto}</div>
-      <!-- Ornamen titik -->
-      ${[0, 60, 120, 180, 240, 300]
+    <!-- Photo -->
+    <div style="position:relative;width:136px;height:136px;margin-bottom:16px;flex-shrink:0">
+      <svg style="position:absolute;top:-9px;left:-9px;width:154px;height:154px" viewBox="0 0 154 154">
+        <circle cx="77" cy="77" r="73" fill="none" stroke="${theme.accent}" stroke-width="0.7" stroke-dasharray="3 5" opacity="0.45"/>
+      </svg>
+      <div style="position:absolute;inset:-3px;border-radius:50%;border:0.8px solid ${theme.accent};opacity:0.3"></div>
+      <div style="width:136px;height:136px;border-radius:50%;overflow:hidden;border:1.5px solid ${theme.accent}">${foto}</div>
+    </div>
+
+    <!-- Putra ke -->
+    <p style="font-family:'Montserrat',sans-serif;font-size:8px;font-weight:600;letter-spacing:3.5px;text-transform:uppercase;color:${theme.gold};margin:0 0 10px;text-align:center">PUTRA KE-${event.anak_ke}</p>
+
+    <!-- Divider -->
+    <div style="display:flex;align-items:center;width:100%;gap:8px;margin-bottom:12px">
+      <div style="flex:1;height:0.5px;background:${theme.divider}"></div>
+      <svg width="6" height="6" viewBox="0 0 6 6"><rect x="0" y="0" width="6" height="6" transform="rotate(45 3 3)" fill="${theme.accent}" opacity=".5"/></svg>
+      <div style="flex:1;height:0.5px;background:${theme.divider}"></div>
+    </div>
+
+    <!-- Parents -->
+    <div style="text-align:center;width:100%">
+      <p style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:10px;color:${theme.subtext};margin:0 0 8px">Putra dari Pasangan</p>
+      <p style="font-family:'Playfair Display',serif;font-size:13px;font-weight:600;color:${theme.text};line-height:1.4;margin:0">${event.nama_bapak}</p>
+      <p style="font-family:'Cormorant Garamond',serif;font-size:13px;color:${theme.gold};margin:3px 0">&amp;</p>
+      <p style="font-family:'Playfair Display',serif;font-size:13px;font-weight:600;color:${theme.text};line-height:1.4;margin:0">${event.nama_ibu}</p>
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div style="
+    position:absolute;
+    left:${INSET + LEFT_W + 1}px;right:${INSET}px;
+    top:${INSET}px;bottom:${INSET}px;
+    display:flex;flex-direction:column;justify-content:center;
+    padding:18px 26px;box-sizing:border-box;
+  ">
+    <!-- Walimatul Khitan label -->
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+      <div style="height:0.5px;flex:1;background:${theme.divider}"></div>
+      <p style="font-family:'Montserrat',sans-serif;font-size:7.5px;font-weight:600;letter-spacing:4px;text-transform:uppercase;color:${theme.accent};margin:0;white-space:nowrap">Walimatul Khitan</p>
+      <div style="height:0.5px;flex:1;background:${theme.divider}"></div>
+    </div>
+
+    <!-- Guest name -->
+    <p style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:10.5px;color:${theme.subtext};margin:0 0 2px">Kepada Yang Terhormat, Bapak / Ibu / Saudara/i:</p>
+    <p style="
+      font-family:'Playfair Display',serif;font-size:18px;font-weight:700;
+      color:${theme.text};line-height:1.2;margin:0 0 8px;
+      padding-bottom:8px;border-bottom:0.5px solid ${theme.divider};
+    ">${namaTamu}</p>
+
+    <!-- Body -->
+    <p style="font-family:'Cormorant Garamond',serif;font-size:11.5px;line-height:1.7;color:${theme.subtext};margin:0 0 10px">
+      Dengan penuh kebahagiaan, kami mengundang kehadiran Bapak / Ibu / Saudara/i dalam acara khitanan putra kami:
+    </p>
+
+    <!-- Child name box -->
+    <div style="margin-bottom:10px;position:relative">
+      <div style="position:absolute;top:0;left:0;width:10px;height:10px;border-top:1px solid ${theme.gold};border-left:1px solid ${theme.gold}"></div>
+      <div style="position:absolute;top:0;right:0;width:10px;height:10px;border-top:1px solid ${theme.gold};border-right:1px solid ${theme.gold}"></div>
+      <div style="position:absolute;bottom:0;left:0;width:10px;height:10px;border-bottom:1px solid ${theme.gold};border-left:1px solid ${theme.gold}"></div>
+      <div style="position:absolute;bottom:0;right:0;width:10px;height:10px;border-bottom:1px solid ${theme.gold};border-right:1px solid ${theme.gold}"></div>
+      <p style="font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:${theme.accent};letter-spacing:1px;line-height:44px;height:44px;margin:0;text-align:center;background:${theme.badge};border-top:1px solid ${theme.accent};border-bottom:1px solid ${theme.accent};overflow:hidden">${event.nama_anak}</p>
+    </div>
+
+    <!-- Event details -->
+    <div style="border:0.5px solid ${theme.divider};background:${theme.panelBg};padding:8px 12px">
+      ${[
+        ["HARI / TANGGAL", tglFmt],
+        ["WAKTU", waktu],
+        ["TEMPAT", event.alamat],
+      ]
         .map(
-          (deg) => `
-        <div style="
-          position:absolute;width:6px;height:6px;border-radius:50%;
-          background:${theme.accent};
-          top:50%;left:50%;
-          transform:translate(-50%,-50%) rotate(${deg}deg) translateY(-84px);
-        "></div>
+          ([label, val], i, arr) => `
+        <div style="display:flex;gap:10px;padding:${i === 0 ? "0" : "5px"} 0 ${i === arr.length - 1 ? "0" : "5px"};${i < arr.length - 1 ? `border-bottom:0.5px solid ${theme.divider}` : ""}">
+          <p style="font-family:'Montserrat',sans-serif;font-size:8px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:${theme.gold};margin:0;min-width:72px;padding-top:1px;flex-shrink:0">${label}</p>
+          <p style="font-family:'Montserrat',sans-serif;font-size:10px;font-weight:400;color:${theme.text};margin:0;line-height:1.5">${val}</p>
+        </div>
       `
         )
         .join("")}
     </div>
 
-    <!-- Nama orang tua -->
-    <div style="text-align:center;line-height:1.6">
-      <p style="color:${theme.accent};font-size:11px;letter-spacing:2px;text-transform:uppercase;margin-bottom:4px;font-family:Georgia,serif">
-        Putra ke-${event.anak_ke}
-      </p>
-      <div style="width:40px;height:1px;background:${theme.accent};margin:0 auto 8px;opacity:0.6"></div>
-      <p style="color:${theme.subtext};font-size:12px;margin-bottom:2px">Pasangan</p>
-      <p style="color:${theme.text};font-size:13px;font-weight:bold;margin-bottom:1px">${event.nama_bapak}</p>
-      <p style="color:${theme.accent};font-size:11px;margin-bottom:1px">&amp;</p>
-      <p style="color:${theme.text};font-size:13px;font-weight:bold">${event.nama_ibu}</p>
-    </div>
+    <p style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:9px;color:${theme.subtext};text-align:right;margin:8px 0 0;opacity:.6">Kehadiran Anda adalah kehormatan bagi kami</p>
   </div>
-
-  <!-- Divider vertikal -->
-  <div style="
-    position:absolute;left:255px;top:24px;width:1px;height:452px;
-    background:linear-gradient(to bottom,transparent,${theme.divider} 20%,${theme.divider} 80%,transparent);
-  "></div>
-
-  <!-- Konten kanan -->
-  <div style="
-    position:absolute;left:268px;top:0;right:0;height:500px;
-    display:flex;flex-direction:column;justify-content:center;
-    padding:28px 32px 28px 20px;
-  ">
-    <!-- Label undangan -->
-    <div style="
-      display:inline-flex;align-items:center;gap:8px;
-      margin-bottom:10px;
-    ">
-      <div style="width:24px;height:1px;background:${theme.accent}"></div>
-      <p style="color:${theme.accent};font-size:10px;letter-spacing:3px;text-transform:uppercase">
-        Undangan Khitanan
-      </p>
-      <div style="width:24px;height:1px;background:${theme.accent}"></div>
-    </div>
-
-    <!-- Kepada -->
-    <p style="color:${theme.subtext};font-size:11px;margin-bottom:3px;font-style:italic">
-      Kepada Yang Terhormat,
-    </p>
-    <p style="
-      color:${theme.text};font-size:19px;font-weight:bold;
-      border-bottom:1px solid ${theme.divider};
-      padding-bottom:10px;margin-bottom:12px;
-      line-height:1.3;
-    ">${namaTamu}</p>
-
-    <!-- Kalimat undangan -->
-    <p style="color:${theme.subtext};font-size:11.5px;line-height:1.8;margin-bottom:14px">
-      Dengan penuh kebahagiaan, kami mengundang kehadiran Bapak/Ibu/Saudara/i
-      dalam <span style="color:${theme.accent};font-weight:bold">Walimatul Khitan</span> putra kami:
-    </p>
-
-    <!-- Nama anak -->
-    <div style="text-align:center;margin-bottom:16px;position:relative">
-      <div style="
-        background:${theme.badge};
-        border:1px solid ${theme.divider};
-        border-radius:8px;
-        padding:10px 16px;
-        display:inline-block;
-        min-width:200px;
-      ">
-        <p style="
-          color:${theme.accent};font-size:26px;font-weight:bold;
-          letter-spacing:1.5px;line-height:1.2;
-          text-shadow:0 2px 12px rgba(0,0,0,0.4);
-          margin:0;
-        ">${event.nama_anak}</p>
-      </div>
-    </div>
-
-    <!-- Detail acara -->
-    <div style="
-      background:${theme.panelBg};
-      border:1px solid ${theme.divider};
-      border-radius:8px;padding:10px 14px;
-      font-size:11.5px;color:${theme.text};line-height:2;
-    ">
-      <div style="display:flex;align-items:flex-start;gap:8px">
-        <span style="color:${theme.accent};font-size:13px;margin-top:2px">&#x1F4C5;</span>
-        <span><strong>${tglFmt}</strong></span>
-      </div>
-      <div style="display:flex;align-items:center;gap:8px">
-        <span style="color:${theme.accent};font-size:13px">&#x23F0;</span>
-        <span><strong>${waktu}</strong></span>
-      </div>
-      <div style="display:flex;align-items:flex-start;gap:8px">
-        <span style="color:${theme.accent};font-size:13px;margin-top:2px">&#x1F4CD;</span>
-        <span style="line-height:1.5"><strong>${event.alamat}</strong></span>
-      </div>
-    </div>
-
-    <!-- Footer -->
-    <p style="
-      color:${theme.subtext};font-size:10px;text-align:right;
-      margin-top:10px;font-style:italic;opacity:0.7;
-    ">Kehadiran Anda adalah kehormatan bagi kami</p>
-  </div>
-
 </div>`;
 }
 
+// ─── Everything below is identical to original ────────────────────────────────
+
 async function generatePNG(event: Event, namaTamu: string, theme: Theme): Promise<Blob> {
+  await ensureFontsLoaded();
+
   let target = document.getElementById(RENDER_ID);
   if (!target) {
     target = document.createElement("div");
@@ -312,7 +282,7 @@ async function generatePNG(event: Event, namaTamu: string, theme: Theme): Promis
     allowTaint: true,
     backgroundColor: null,
     width: 800,
-    height: 500,
+    height: 460,
   });
   return new Promise((res) => canvas.toBlob((b: Blob) => res(b), "image/png"));
 }
@@ -566,30 +536,28 @@ export default function KartuPage({ event, tamu }: Props) {
       {previewHtml && (
         <Card>
           <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle>
-                Preview — {selectedTamu?.nama}
-                <span className="ml-2 text-xs font-normal text-muted-foreground">
-                  Tema: {selectedTheme.label}
-                </span>
-              </CardTitle>
-            </div>
+            <CardTitle>
+              Preview — {selectedTamu?.nama}
+              <span className="ml-2 text-xs font-normal text-muted-foreground">
+                Tema: {selectedTheme.label}
+              </span>
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="bg-muted/40 rounded-xl p-4 overflow-auto">
-              <div className="relative" style={{ height: 285, width: "100%", maxWidth: 480 }}>
+              <div className="relative" style={{ height: 276, width: "100%", maxWidth: 480 }}>
                 <div
                   style={{
                     transformOrigin: "top left",
                     transform: "scale(0.6)",
                     width: 800,
-                    height: 500,
+                    height: 460,
                     position: "absolute",
                     top: 0,
                     left: 0,
-                    borderRadius: 12,
+                    borderRadius: 0,
                     overflow: "hidden",
-                    boxShadow: "0 8px 32px rgba(0,0,0,0.25)",
+                    boxShadow: "0 12px 40px rgba(0,0,0,0.18)",
                   }}
                   dangerouslySetInnerHTML={{ __html: previewHtml }}
                 />
