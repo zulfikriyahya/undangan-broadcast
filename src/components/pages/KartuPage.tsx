@@ -34,12 +34,12 @@ function buildKartuHTML(event: Event, namaTamu: string): string {
   <svg style="position:absolute;top:0;left:0;width:160px;opacity:.25" viewBox="0 0 160 160">
     <circle cx="0" cy="0" r="140" fill="none" stroke="#fff" stroke-width="1.5"/>
     <circle cx="0" cy="0" r="110" fill="none" stroke="#fff" stroke-width="1"/>
-    <circle cx="0" cy="0" r="80" fill="none" stroke="#d4af37" stroke-width="1.5"/>
+    <circle cx="0" cy="0" r="80"  fill="none" stroke="#d4af37" stroke-width="1.5"/>
   </svg>
   <svg style="position:absolute;bottom:0;right:0;width:160px;opacity:.25;transform:rotate(180deg)" viewBox="0 0 160 160">
     <circle cx="0" cy="0" r="140" fill="none" stroke="#fff" stroke-width="1.5"/>
     <circle cx="0" cy="0" r="110" fill="none" stroke="#fff" stroke-width="1"/>
-    <circle cx="0" cy="0" r="80" fill="none" stroke="#d4af37" stroke-width="1.5"/>
+    <circle cx="0" cy="0" r="80"  fill="none" stroke="#d4af37" stroke-width="1.5"/>
   </svg>
   <div style="position:absolute;left:0;top:0;width:260px;height:500px;background:rgba(0,0,0,.25);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px">
     <div style="width:160px;height:160px;border-radius:50%;border:4px solid #d4af37;overflow:hidden;background:#1b4332;display:flex;align-items:center;justify-content:center">
@@ -79,7 +79,6 @@ async function generatePNG(event: Event, namaTamu: string): Promise<Blob> {
     document.body.appendChild(target);
   }
   target.innerHTML = buildKartuHTML(event, namaTamu);
-
   const canvas = await (window as any).html2canvas(target.firstElementChild, {
     scale: 2,
     useCORS: true,
@@ -104,11 +103,9 @@ async function uploadKartu(event: Event, tamuId: number, namaTamu: string): Prom
   const fd = new FormData();
   fd.append("file", blob, filename);
   fd.append("filename", filename);
-
   const res = await fetch("/api/kartu/upload", { method: "POST", body: fd });
   const data = await res.json();
   if (!data.ok) return null;
-
   await fetch("/api/tamu", {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
@@ -117,9 +114,7 @@ async function uploadKartu(event: Event, tamuId: number, namaTamu: string): Prom
   return data.url;
 }
 
-async function sleep(ms: number) {
-  return new Promise((r) => setTimeout(r, ms));
-}
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 interface ProgressState {
   value: number;
@@ -202,123 +197,124 @@ export default function KartuPage({ event, tamu }: Props) {
     );
   }
 
+  const uploaded = tamuData.filter((t) => t.kartu_url).length;
+  const pctUpload = tamuData.length ? Math.round((uploaded / tamuData.length) * 100) : 0;
+
   return (
-    <>
+    <div className="fade-in space-y-4">
+      <div className="mb-1">
+        <h1 className="text-xl font-bold text-foreground">Kartu Undangan</h1>
+        <p className="text-xs text-muted-foreground mt-0.5">
+          Generate, preview, dan upload kartu undangan per tamu.
+        </p>
+      </div>
+
       <script
         src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"
         async
       />
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Generate Kartu Undangan</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex flex-wrap gap-3 items-end">
-            <div className="space-y-1.5 min-w-[200px]">
-              <label className="text-xs font-semibold text-muted-foreground">Pilih Tamu</label>
-              <Select value={selectedId} onValueChange={setSelectedId}>
-                <SelectTrigger>
-                  <SelectValue placeholder="— Pilih tamu —" />
-                </SelectTrigger>
-                <SelectContent>
-                  {tamu.map((t) => (
-                    <SelectItem key={t.id} value={String(t.id)}>
-                      {t.nama}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+      <div className="bento-grid">
+        <Card>
+          <CardHeader>
+            <CardTitle>Pilih Tamu</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <Select value={selectedId} onValueChange={setSelectedId}>
+              <SelectTrigger>
+                <SelectValue placeholder="— Pilih tamu —" />
+              </SelectTrigger>
+              <SelectContent>
+                {tamu.map((t) => (
+                  <SelectItem key={t.id} value={String(t.id)}>
+                    {t.nama}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
 
-            <div className="flex flex-wrap gap-2">
-              <Button onClick={preview} disabled={!selectedId}>
+            <div className="grid grid-cols-2 gap-2">
+              <Button onClick={preview} disabled={!selectedId} variant="outline" size="sm">
                 Preview
               </Button>
-              <Button variant="success" onClick={downloadSatu} disabled={!selectedId}>
+              <Button onClick={downloadSatu} disabled={!selectedId} variant="success" size="sm">
                 Download
               </Button>
-              <Button variant="outline" onClick={uploadSatu} disabled={!selectedId}>
+              <Button onClick={uploadSatu} disabled={!selectedId} variant="secondary" size="sm">
                 Upload URL
               </Button>
-              <Button variant="warning" onClick={downloadSemua}>
+              <Button onClick={downloadSemua} variant="warning" size="sm">
                 Download Semua
               </Button>
-              <Button variant="secondary" onClick={uploadSemua}>
-                Upload Semua
-              </Button>
             </div>
-          </div>
+            <Button onClick={uploadSemua} variant="default" size="sm" className="w-full">
+              Upload Semua
+            </Button>
 
-          {progress && (
-            <div className="space-y-1.5">
-              <Progress value={progress.value} />
-              <p className="text-xs text-muted-foreground">{progress.label}</p>
+            {progress && (
+              <div className="space-y-1.5 pt-1">
+                <Progress value={progress.value} />
+                <p className="text-xs text-muted-foreground">{progress.label}</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>
+              Status Upload
+              <span className="ml-2 text-xs font-normal text-muted-foreground">
+                {uploaded}/{tamuData.length} kartu
+              </span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <Progress value={pctUpload} />
+            <p className="text-xs text-muted-foreground">{pctUpload}% kartu sudah di-upload</p>
+            <div className="max-h-48 overflow-y-auto scrollbar-thin space-y-0.5">
+              {tamuData.map((t) => (
+                <div
+                  key={t.id}
+                  className="flex items-center justify-between py-1.5 border-b border-border/40 last:border-0"
+                >
+                  <span className="text-sm font-medium truncate mr-2">{t.nama}</span>
+                  {t.kartu_url ? (
+                    <a href={t.kartu_url} target="_blank" rel="noreferrer" className="shrink-0">
+                      <Badge variant="sent">Siap</Badge>
+                    </a>
+                  ) : (
+                    <Badge variant="none" className="shrink-0">
+                      Belum
+                    </Badge>
+                  )}
+                </div>
+              ))}
             </div>
-          )}
+          </CardContent>
+        </Card>
+      </div>
 
-          {previewHtml && (
-            <div className="bg-muted rounded-lg p-3 overflow-auto">
+      {previewHtml && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Preview Kartu — {selectedTamu?.nama}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="bg-muted/40 rounded-lg p-3 overflow-auto">
               <div
                 style={{
                   transformOrigin: "top left",
-                  transform: "scale(0.6)",
+                  transform: "scale(0.55)",
                   width: 800,
                   height: 500,
                 }}
                 dangerouslySetInnerHTML={{ __html: previewHtml }}
               />
             </div>
-          )}
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Status Kartu Tamu</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm border-collapse">
-              <thead>
-                <tr className="bg-muted text-muted-foreground text-xs">
-                  <th className="px-3 py-2 text-left">Nama</th>
-                  <th className="px-3 py-2 text-left">Status</th>
-                  <th className="px-3 py-2 text-left">URL</th>
-                </tr>
-              </thead>
-              <tbody>
-                {tamuData.map((t) => (
-                  <tr key={t.id} className="border-b border-border hover:bg-muted/40">
-                    <td className="px-3 py-2 font-medium">{t.nama}</td>
-                    <td className="px-3 py-2">
-                      {t.kartu_url ? (
-                        <Badge variant="sent">Siap</Badge>
-                      ) : (
-                        <Badge variant="none">Belum di-upload</Badge>
-                      )}
-                    </td>
-                    <td className="px-3 py-2">
-                      {t.kartu_url ? (
-                        <a
-                          href={t.kartu_url}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="text-primary text-xs underline"
-                        >
-                          Lihat
-                        </a>
-                      ) : (
-                        <span className="text-muted-foreground">—</span>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </CardContent>
-      </Card>
-    </>
+          </CardContent>
+        </Card>
+      )}
+    </div>
   );
 }

@@ -1,34 +1,263 @@
+@import url("https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800&display=swap");
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --background: 120 20% 97%;
-    --foreground: 150 20% 10%;
+    --background: 140 25% 97%;
+    --foreground: 150 25% 8%;
     --card: 0 0% 100%;
-    --card-foreground: 150 20% 10%;
-    --primary: 150 42% 30%;
+    --card-foreground: 150 25% 8%;
+    --primary: 150 45% 28%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 150 20% 94%;
-    --secondary-foreground: 150 42% 20%;
-    --muted: 150 10% 94%;
-    --muted-foreground: 150 10% 45%;
-    --accent: 150 30% 88%;
-    --accent-foreground: 150 42% 20%;
+    --secondary: 150 20% 92%;
+    --secondary-foreground: 150 45% 18%;
+    --muted: 150 12% 93%;
+    --muted-foreground: 150 10% 42%;
+    --accent: 150 32% 86%;
+    --accent-foreground: 150 45% 18%;
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
-    --border: 150 15% 88%;
-    --input: 150 15% 88%;
-    --ring: 150 42% 30%;
-    --radius: 0.625rem;
+    --border: 150 18% 87%;
+    --input: 150 18% 87%;
+    --ring: 150 45% 28%;
+    --radius: 0.75rem;
+    --glass-bg: rgba(255, 255, 255, 0.65);
+    --glass-border: rgba(255, 255, 255, 0.45);
+    --glass-shadow: 0 8px 32px rgba(27, 67, 50, 0.1);
+    --nav-height: 56px;
+  }
+
+  .dark {
+    --background: 160 20% 7%;
+    --foreground: 150 15% 92%;
+    --card: 160 18% 10%;
+    --card-foreground: 150 15% 92%;
+    --primary: 150 45% 48%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 160 18% 15%;
+    --secondary-foreground: 150 15% 85%;
+    --muted: 160 15% 14%;
+    --muted-foreground: 150 10% 55%;
+    --accent: 150 25% 20%;
+    --accent-foreground: 150 15% 85%;
+    --destructive: 0 65% 55%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 160 15% 18%;
+    --input: 160 15% 18%;
+    --ring: 150 45% 48%;
+    --glass-bg: rgba(10, 26, 18, 0.6);
+    --glass-border: rgba(255, 255, 255, 0.08);
+    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
   }
 
   * {
     @apply border-border;
   }
 
+  html {
+    scroll-behavior: smooth;
+  }
+
   body {
-    @apply bg-background text-foreground font-sans antialiased;
+    @apply bg-background text-foreground antialiased;
+    font-family: "Lexend", sans-serif;
+    font-weight: 400;
+    min-height: 100vh;
+    background-image: radial-gradient(
+      ellipse 80% 60% at 50% -10%,
+      hsl(var(--primary) / 0.08) 0%,
+      transparent 70%
+    );
+    background-attachment: fixed;
+  }
+
+  .dark body {
+    background-image: radial-gradient(
+      ellipse 80% 60% at 50% -10%,
+      hsl(var(--primary) / 0.12) 0%,
+      transparent 70%
+    );
+  }
+}
+
+@layer components {
+  .glass {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
+    backdrop-filter: blur(16px) saturate(1.4);
+    -webkit-backdrop-filter: blur(16px) saturate(1.4);
+  }
+
+  .glass-card {
+    @apply glass rounded-xl;
+  }
+
+  .nav-glass {
+    background: var(--glass-bg);
+    border-bottom: 1px solid var(--glass-border);
+    box-shadow: 0 2px 16px hsl(var(--primary) / 0.06);
+    backdrop-filter: blur(20px) saturate(1.5);
+    -webkit-backdrop-filter: blur(20px) saturate(1.5);
+  }
+
+  .bento-grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  }
+
+  .bento-grid-2 {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .bento-grid-4 {
+    display: grid;
+    gap: 0.75rem;
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  @media (max-width: 768px) {
+    .bento-grid-2 {
+      grid-template-columns: 1fr;
+    }
+    .bento-grid-4 {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: 480px) {
+    .bento-grid-4 {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  .fade-in {
+    animation: fadeIn 0.4s ease-out both;
+  }
+
+  .slide-up {
+    animation: slideUp 0.35s ease-out both;
+  }
+
+  .scale-in {
+    animation: scaleIn 0.3s ease-out both;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes scaleIn {
+    from {
+      opacity: 0;
+      transform: scale(0.97);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  .nav-link {
+    @apply relative px-4 py-2 text-xs font-semibold transition-colors duration-200 whitespace-nowrap;
+    color: hsl(var(--muted-foreground));
+  }
+
+  .nav-link:hover {
+    color: hsl(var(--primary));
+  }
+
+  .nav-link::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 0;
+    height: 2px;
+    background: hsl(var(--primary));
+    border-radius: 2px 2px 0 0;
+    transform: translateX(-50%);
+    transition: width 0.25s ease;
+  }
+
+  .nav-link.active {
+    color: hsl(var(--primary));
+    font-weight: 700;
+  }
+
+  .nav-link.active::after {
+    width: 60%;
+  }
+
+  .theme-toggle {
+    @apply relative inline-flex items-center justify-center w-9 h-9 rounded-lg transition-colors duration-200;
+    color: hsl(var(--muted-foreground));
+  }
+
+  .theme-toggle:hover {
+    @apply bg-accent;
+    color: hsl(var(--primary));
+  }
+
+  .pwa-install-btn {
+    @apply hidden items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200;
+    background: hsl(var(--primary) / 0.1);
+    color: hsl(var(--primary));
+    border: 1px solid hsl(var(--primary) / 0.2);
+  }
+
+  .pwa-install-btn:hover {
+    background: hsl(var(--primary) / 0.18);
+  }
+
+  .pwa-install-btn.visible {
+    @apply flex;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--border)) transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: hsl(var(--border));
+    border-radius: 4px;
   }
 }

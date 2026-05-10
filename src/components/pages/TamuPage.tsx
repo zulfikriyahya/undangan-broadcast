@@ -181,77 +181,93 @@ export default function TamuPage() {
   }
 
   return (
-    <div className="space-y-4">
-      <Card>
-        <CardHeader>
-          <CardTitle>Import dari Excel</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <p className="text-xs text-muted-foreground">
-            Kolom yang dikenali: <code className="bg-muted px-1 rounded text-xs">nama_lengkap</code>
-            , <code className="bg-muted px-1 rounded text-xs">alamat</code>,{" "}
-            <code className="bg-muted px-1 rounded text-xs">no_telpon</code> (opsional).
-          </p>
-          <div className="flex gap-2 flex-wrap items-center">
-            <Input type="file" accept=".xlsx,.xls" className="w-auto" onChange={handleImport} />
-            <Button variant="secondary" asChild>
-              <a href="/template-tamu.xlsx" download>
-                Unduh Template
-              </a>
-            </Button>
-          </div>
-          {importAlert.alert && (
-            <Alert variant={importAlert.alert.variant}>
-              <AlertDescription>{importAlert.alert.message}</AlertDescription>
-            </Alert>
-          )}
-        </CardContent>
-      </Card>
+    <div className="fade-in space-y-4">
+      <div className="mb-1">
+        <h1 className="text-xl font-bold text-foreground">Tamu Undangan</h1>
+        <p className="text-xs text-muted-foreground mt-0.5">
+          Kelola daftar tamu, import dari Excel, atau tambah secara manual.
+        </p>
+      </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Tambah Tamu Manual</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="grid grid-cols-1 sm:grid-cols-[2fr_2fr_1.5fr_auto] gap-2">
-            <Input
-              placeholder="Nama lengkap *"
-              value={nama}
-              onChange={(e) => setNama(e.target.value)}
-            />
-            <Input
-              placeholder="Alamat"
-              value={alamat}
-              onChange={(e) => setAlamat(e.target.value)}
-            />
-            <Input
-              placeholder="No. Telpon (08xxx)"
-              value={hp}
-              onChange={(e) => setHp(e.target.value)}
-            />
-            <Button onClick={tambahTamu}>Tambah</Button>
-          </div>
-          {tambahAlert.alert && (
-            <Alert variant={tambahAlert.alert.variant}>
-              <AlertDescription>{tambahAlert.alert.message}</AlertDescription>
-            </Alert>
-          )}
-        </CardContent>
-      </Card>
+      <div className="bento-grid">
+        <Card>
+          <CardHeader>
+            <CardTitle>Import dari Excel</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <p className="text-xs text-muted-foreground">
+              Kolom: <code className="bg-muted px-1 rounded text-xs">nama_lengkap</code>,{" "}
+              <code className="bg-muted px-1 rounded text-xs">alamat</code>,{" "}
+              <code className="bg-muted px-1 rounded text-xs">no_telpon</code> (opsional).
+            </p>
+            <div className="flex gap-2 flex-wrap items-center">
+              <Input type="file" accept=".xlsx,.xls" className="w-auto" onChange={handleImport} />
+              <Button variant="secondary" asChild>
+                <a href="/template-tamu.xlsx" download>
+                  Unduh Template
+                </a>
+              </Button>
+            </div>
+            {importAlert.alert && (
+              <Alert variant={importAlert.alert.variant}>
+                <AlertDescription>{importAlert.alert.message}</AlertDescription>
+              </Alert>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Tambah Manual</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="grid grid-cols-1 gap-2">
+              <Input
+                placeholder="Nama lengkap *"
+                value={nama}
+                onChange={(e) => setNama(e.target.value)}
+              />
+              <Input
+                placeholder="Alamat"
+                value={alamat}
+                onChange={(e) => setAlamat(e.target.value)}
+              />
+              <Input
+                placeholder="No. Telpon (08xxx)"
+                value={hp}
+                onChange={(e) => setHp(e.target.value)}
+              />
+              <Button onClick={tambahTamu} className="w-full">
+                Tambah Tamu
+              </Button>
+            </div>
+            {tambahAlert.alert && (
+              <Alert variant={tambahAlert.alert.variant}>
+                <AlertDescription>{tambahAlert.alert.message}</AlertDescription>
+              </Alert>
+            )}
+          </CardContent>
+        </Card>
+      </div>
 
       <Card>
         <CardHeader>
           <div className="flex justify-between items-center flex-wrap gap-2">
-            <CardTitle>Daftar Tamu</CardTitle>
-            <div className="flex gap-2 flex-wrap">
+            <CardTitle>
+              Daftar Tamu
+              <span className="ml-2 text-xs font-normal text-muted-foreground">
+                ({filtered.length}/{allTamu.length})
+              </span>
+            </CardTitle>
+            <div className="flex gap-2 flex-wrap items-center">
               <Input
                 placeholder="Cari nama..."
-                className="w-40"
+                className="w-36 sm:w-44"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
               <Select value={filterStatus} onValueChange={setFilterStatus}>
-                <SelectTrigger className="w-40">
+                <SelectTrigger className="w-36 sm:w-40">
                   <SelectValue placeholder="Semua Status" />
                 </SelectTrigger>
                 <SelectContent>
@@ -269,13 +285,13 @@ export default function TamuPage() {
         </CardHeader>
         <CardContent>
           {filtered.length === 0 ? (
-            <p className="text-center text-muted-foreground py-8 text-sm">Belum ada data tamu.</p>
+            <p className="text-center text-muted-foreground py-10 text-sm">Belum ada data tamu.</p>
           ) : (
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto scrollbar-thin">
               <table className="w-full text-sm border-collapse">
                 <thead>
-                  <tr className="bg-muted text-muted-foreground text-xs">
-                    <th className="px-3 py-2 text-left w-8">
+                  <tr className="bg-muted/60 text-muted-foreground text-xs">
+                    <th className="px-3 py-2 text-left w-8 rounded-tl-lg">
                       <input
                         type="checkbox"
                         onChange={(e) =>
@@ -287,24 +303,26 @@ export default function TamuPage() {
                     </th>
                     <th className="px-3 py-2 text-left">#</th>
                     <th className="px-3 py-2 text-left">Nama</th>
-                    <th className="px-3 py-2 text-left">Alamat</th>
+                    <th className="px-3 py-2 text-left hidden md:table-cell">Alamat</th>
                     <th className="px-3 py-2 text-left">No. Telpon</th>
-                    <th className="px-3 py-2 text-left">Status WA</th>
-                    <th className="px-3 py-2 text-left">Aksi</th>
+                    <th className="px-3 py-2 text-left">Status</th>
+                    <th className="px-3 py-2 text-left rounded-tr-lg">Aksi</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filtered.map((t, i) => (
                     <tr
                       key={t.id}
-                      className="border-b border-border hover:bg-muted/40 transition-colors"
+                      className="border-b border-border/50 hover:bg-muted/30 transition-colors duration-150"
                     >
                       <td className="px-3 py-2">
                         <input type="checkbox" className="row-check" data-id={t.id} />
                       </td>
-                      <td className="px-3 py-2 text-muted-foreground">{i + 1}</td>
+                      <td className="px-3 py-2 text-muted-foreground text-xs">{i + 1}</td>
                       <td className="px-3 py-2 font-semibold">{t.nama}</td>
-                      <td className="px-3 py-2 text-muted-foreground">{t.alamat || "—"}</td>
+                      <td className="px-3 py-2 text-muted-foreground hidden md:table-cell max-w-[180px] truncate">
+                        {t.alamat || "—"}
+                      </td>
                       <td className="px-3 py-2 text-muted-foreground">{t.no_telpon || "—"}</td>
                       <td className="px-3 py-2">
                         <StatusBadge status={t.broadcast_status as BroadcastStatus} />
@@ -330,9 +348,6 @@ export default function TamuPage() {
                   ))}
                 </tbody>
               </table>
-              <p className="text-xs text-muted-foreground mt-2">
-                Menampilkan {filtered.length} dari {allTamu.length} tamu
-              </p>
             </div>
           )}
         </CardContent>

@@ -1,0 +1,39 @@
+{
+  "name": "Undangan Khitanan",
+  "short_name": "Khitanan",
+  "description": "Aplikasi manajemen undangan khitanan digital — kelola tamu, broadcast WhatsApp, dan kartu undangan.",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#f4faf6",
+  "theme_color": "#2d6a4f",
+  "lang": "id",
+  "dir": "ltr",
+  "categories": [
+    "utilities",
+    "productivity"
+  ],
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/icons/screenshot-mobile.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Dashboard Undangan Khitanan"
+    }
+  ]
+}

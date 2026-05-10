@@ -7,6 +7,9 @@ await bootstrap();
 const event = (await q.getEvent()) ?? null;
 ---
 
-<Layout title="Setup Acara">
+<Layout
+  title="Setup Acara"
+  description="Isi data acara khitanan: nama anak, orang tua, tanggal, tempat, dan foto."
+>
   <AcaraPage event={event} client:load />
 </Layout>

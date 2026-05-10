@@ -8,6 +8,9 @@ const event = (await q.getEvent()) ?? null;
 const stats = await q.stats();
 ---
 
-<Layout title="Dashboard">
+<Layout
+  title="Dashboard"
+  description="Ringkasan data acara khitanan, statistik tamu, dan status broadcast WhatsApp."
+>
   <DashboardPage event={event} stats={stats} client:load />
 </Layout>

@@ -46,7 +46,7 @@ DB_NAME=undangan_khitanan
   },
   "dependencies": {
     "@astrojs/node": "^10.1.0",
-    "@astrojs/react": "^4.0.0",
+    "@astrojs/react": "^5.0.4",
     "@radix-ui/react-dialog": "^1.1.0",
     "@radix-ui/react-label": "^2.1.0",
     "@radix-ui/react-select": "^2.1.0",
@@ -57,8 +57,8 @@ DB_NAME=undangan_khitanan
     "dotenv": "^17.4.2",
     "lucide-react": "^0.383.0",
     "mysql2": "^3.11.0",
-    "react": "^18.3.0",
-    "react-dom": "^18.3.0",
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6",
     "tailwind-merge": "^2.3.0",
     "tailwindcss": "^3.4.0",
     "xlsx": "^0.18.5"
@@ -66,38 +66,9 @@ DB_NAME=undangan_khitanan
   "devDependencies": {
     "@astrojs/tailwind": "^5.1.0",
     "@types/node": "^25.6.2",
-    "@types/react": "^18.3.0",
-    "@types/react-dom": "^18.3.0"
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3"
   }
-}
-
-```
----
-
-## src/components/hooks/useFlashAlert.ts
-```ts
-import { useState } from "react";
-
-export type AlertVariant = "success" | "destructive" | "warning" | "info";
-
-export interface AlertState {
-  message: string;
-  variant: AlertVariant;
-}
-
-export function useFlashAlert(duration = 4000) {
-  const [alert, setAlert] = useState<AlertState | null>(null);
-
-  function show(message: string, variant: AlertVariant = "success") {
-    setAlert({ message, variant });
-    if (duration > 0) setTimeout(() => setAlert(null), duration);
-  }
-
-  function clear() {
-    setAlert(null);
-  }
-
-  return { alert, show, clear };
 }
 
 ```
@@ -191,7 +162,7 @@ export default function AcaraPage({ event }: Props) {
           </Alert>
         )}
 
-        <form ref={formRef} onSubmit={handleSubmit} encType="multipart/form-data">
+        <form ref={formRef} onSubmit={handleSubmit} method="post" encType="multipart/form-data">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Field label="Nama Anak *" id="nama_anak">
               <Input
@@ -374,11 +345,12 @@ interface Props {
 export default function BroadcastPage({ event, tamu: initialTamu }: Props) {
   const [template, setTemplate] = useState(TEMPLATES.formal);
   const [search, setSearch] = useState("");
-  const [filterStatus, setFilterStatus] = useState("");
+  const [filterStatus, setFilterStatus] = useState("all");
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [progress, setProgress] = useState<{ value: number; label: string } | null>(null);
   const [running, setRunning] = useState(false);
+  const [tamuList, setTamuList] = useState(initialTamu);
   const [riwayat, setRiwayat] = useState<Broadcast[]>([]);
   const stopRef = useRef(false);
 
@@ -387,33 +359,38 @@ export default function BroadcastPage({ event, tamu: initialTamu }: Props) {
     setRiwayat(await res.json());
   }
 
+  async function refreshTamu() {
+    const res = await fetch("/api/tamu");
+    const all: Tamu[] = await res.json();
+    setTamuList(
+      all
+        .filter((t) => t.no_telpon)
+        .map((t) => ({ ...t, last_status: t.broadcast_status ?? null })) as any[]
+    );
+  }
+
   useEffect(() => {
     loadRiwayat();
   }, []);
 
   const filtered = useMemo(
     () =>
-      initialTamu.filter((t) => {
+      tamuList.filter((t) => {
         const matchName = t.nama.toLowerCase().includes(search.toLowerCase());
-        const matchStatus = !filterStatus
-          ? true
-          : filterStatus === "belum"
-            ? !t.last_status || t.last_status === "failed"
-            : t.last_status === filterStatus;
+        const matchStatus =
+          filterStatus === "all"
+            ? true
+            : filterStatus === "belum"
+              ? !t.last_status || t.last_status === "failed"
+              : t.last_status === filterStatus;
         return matchName && matchStatus;
       }),
-    [initialTamu, search, filterStatus]
+    [tamuList, search, filterStatus]
   );
 
   const previewText = useMemo(
-    () =>
-      resolveVars(
-        template,
-        event,
-        initialTamu[0]?.nama ?? "Budi Santoso",
-        initialTamu[0]?.kartu_url
-      ),
-    [template, event, initialTamu]
+    () => resolveVars(template, event, tamuList[0]?.nama ?? "Budi Santoso", tamuList[0]?.kartu_url),
+    [template, event, tamuList]
   );
 
   function toggleAll(checked: boolean) {
@@ -473,7 +450,7 @@ export default function BroadcastPage({ event, tamu: initialTamu }: Props) {
     }
 
     setRunning(false);
-    loadRiwayat();
+    await Promise.all([loadRiwayat(), refreshTamu()]);
   }
 
   return (
@@ -544,7 +521,7 @@ export default function BroadcastPage({ event, tamu: initialTamu }: Props) {
                   <SelectValue placeholder="Semua" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Semua</SelectItem>
+                  <SelectItem value="all">Semua</SelectItem>
                   <SelectItem value="belum">Belum Terkirim</SelectItem>
                   <SelectItem value="sent">Sudah Terkirim</SelectItem>
                   <SelectItem value="failed">Gagal</SelectItem>
@@ -1184,7 +1161,7 @@ function EditDialog({ tamu, open, onClose, onSaved }: EditDialogProps) {
 export default function TamuPage() {
   const [allTamu, setAllTamu] = useState<Tamu[]>([]);
   const [search, setSearch] = useState("");
-  const [filterStatus, setFilterStatus] = useState("");
+  const [filterStatus, setFilterStatus] = useState("all");
   const [editTarget, setEditTarget] = useState<Tamu | null>(null);
   const [editOpen, setEditOpen] = useState(false);
   const [nama, setNama] = useState("");
@@ -1204,11 +1181,12 @@ export default function TamuPage() {
 
   const filtered = allTamu.filter((t) => {
     const matchName = t.nama.toLowerCase().includes(search.toLowerCase());
-    const matchStatus = !filterStatus
-      ? true
-      : filterStatus === "null"
-        ? !t.broadcast_status
-        : t.broadcast_status === filterStatus;
+    const matchStatus =
+      filterStatus === "all"
+        ? true
+        : filterStatus === "null"
+          ? !t.broadcast_status
+          : t.broadcast_status === filterStatus;
     return matchName && matchStatus;
   });
 
@@ -1347,7 +1325,7 @@ export default function TamuPage() {
                   <SelectValue placeholder="Semua Status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Semua Status</SelectItem>
+                  <SelectItem value="all">Semua Status</SelectItem>
                   <SelectItem value="sent">Terkirim</SelectItem>
                   <SelectItem value="failed">Gagal</SelectItem>
                   <SelectItem value="null">Belum Kirim</SelectItem>
@@ -1881,6 +1859,35 @@ export { Textarea };
 ```
 ---
 
+## src/hooks/useFlashAlert.ts
+```ts
+import { useState } from "react";
+
+export type AlertVariant = "success" | "destructive" | "warning" | "info";
+
+export interface AlertState {
+  message: string;
+  variant: AlertVariant;
+}
+
+export function useFlashAlert(duration = 4000) {
+  const [alert, setAlert] = useState<AlertState | null>(null);
+
+  function show(message: string, variant: AlertVariant = "success") {
+    setAlert({ message, variant });
+    if (duration > 0) setTimeout(() => setAlert(null), duration);
+  }
+
+  function clear() {
+    setAlert(null);
+  }
+
+  return { alert, show, clear };
+}
+
+```
+---
+
 ## src/layouts/Layout.astro
 ```astro
 ---
@@ -1946,7 +1953,7 @@ const pool = mysql.createPool({
   host: process.env.DB_HOST ?? "127.0.0.1",
   port: parseInt(process.env.DB_PORT ?? "3306"),
   user: process.env.DB_USER ?? "root",
-  password: process.env.DB_PASS ?? "",
+  password: process.env.DB_PASS ?? "18012000",
   database: process.env.DB_NAME ?? "undangan_khitanan",
   waitForConnections: true,
   connectionLimit: 10,
@@ -2165,16 +2172,17 @@ export function formatDate(iso: string): string {
 
 ## src/lib/whatsapp.ts
 ```ts
-const ENDPOINT = process.env.WA_ENDPOINT ?? "";
-const API_KEY = process.env.WA_API_KEY ?? "";
+const ENDPOINT = import.meta.env.WA_ENDPOINT ?? process.env.WA_ENDPOINT ?? "";
+const API_KEY = import.meta.env.WA_API_KEY ?? process.env.WA_API_KEY ?? "";
 
 export async function sendWA(number: string, message: string): Promise<void> {
+  if (!ENDPOINT) throw new Error("WA_ENDPOINT tidak dikonfigurasi");
   const res = await fetch(ENDPOINT, {
     method: "POST",
     headers: { "Content-Type": "application/json", "x-api-key": API_KEY },
     body: JSON.stringify({ number, message }),
   });
-  if (!res.ok) throw new Error(`WA API ${res.status}`);
+  if (!res.ok) throw new Error(`WA API ${res.status}: ${await res.text()}`);
 }
 
 ```
@@ -2445,7 +2453,10 @@ import BroadcastPage from "../components/pages/BroadcastPage";
 
 await bootstrap();
 const event = (await q.getEvent()) ?? null;
-const tamu = (await q.listTamu()).filter((t) => t.no_telpon) as any[];
+const rawTamu = await q.listTamu();
+const tamu = rawTamu
+  .filter((t) => t.no_telpon ?? "")
+  .map((t) => ({ ...t, last_status: t.broadcast_status ?? null }));
 ---
 
 <Layout title="Broadcast WhatsApp">
@@ -2515,8 +2526,8 @@ import * as XLSX from "xlsx";
 export const GET: APIRoute = () => {
   const ws = XLSX.utils.aoa_to_sheet([
     ["nama_lengkap", "alamat", "no_telpon"],
-    ["Budi Santoso", "Jl. Melati No. 5, Jakarta", "08123456789"],
-    ["Sari Dewi", "Jl. Anggrek No. 10, Bogor", ""],
+    ["Yahya Zulfikri", "Kp. Kebon Cau RT 001 RW 005, Pandeglang - Banten", "0895351856267"],
+    ["Fera Oktapia", "Kp. Kebon Cau RT 001 RW 005, Pandeglang - Banten", "0895351856267"],
   ]);
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, "Tamu");

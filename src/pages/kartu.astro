@@ -8,6 +8,9 @@ const event = (await q.getEvent()) ?? null;
 const tamu = (await q.listTamu()).map(({ id, nama, kartu_url }) => ({ id, nama, kartu_url }));
 ---
 
-<Layout title="Kartu Undangan">
+<Layout
+  title="Kartu Undangan"
+  description="Generate, preview, dan upload kartu undangan khitanan per tamu secara massal."
+>
   <KartuPage event={event} tamu={tamu} client:load />
 </Layout>

@@ -1,7 +1,10 @@
 ---
 import "../styles/globals.css";
 
-const { title } = Astro.props;
+const {
+  title,
+  description = "Aplikasi manajemen undangan khitanan digital — kelola tamu, broadcast WhatsApp, dan kartu undangan dalam satu platform.",
+} = Astro.props;
 
 const NAV = [
   { href: "/", label: "Dashboard" },
@@ -12,40 +15,215 @@ const NAV = [
 ];
 
 const current = Astro.url.pathname;
+const siteUrl = import.meta.env.SITE_URL ?? "http://localhost:4000";
+const canonicalUrl = new URL(Astro.url.pathname, siteUrl).toString();
+const pageTitle = `${title} — Undangan Khitanan`;
 ---
 
 <!doctype html>
-<html lang="id">
+<html lang="id" class="scroll-smooth">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{title} — Undangan Khitanan</title>
+    <meta name="theme-color" content="#2d6a4f" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0a1a12" media="(prefers-color-scheme: dark)" />
+
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href={canonicalUrl} />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:site_name" content="Undangan Khitanan" />
+    <meta property="og:locale" content="id_ID" />
+
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:description" content={description} />
+
+    <meta name="application-name" content="Undangan Khitanan" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Khitanan" />
+    <meta name="mobile-web-app-capable" content="yes" />
+
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="icon" href="/icons/icon-192.png" type="image/png" sizes="192x192" />
+    <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800&display=swap"
+    />
+
+    <script is:inline>
+      (function () {
+        const stored = localStorage.getItem("theme");
+        const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+        if (stored === "dark" || (!stored && prefersDark)) {
+          document.documentElement.classList.add("dark");
+        }
+      })();
+    </script>
   </head>
-  <body>
-    <header class="bg-primary text-primary-foreground px-6 py-3.5 flex items-center gap-3">
-      <h1 class="text-sm font-bold tracking-wide">Undangan Khitanan</h1>
+
+  <body class="min-h-screen flex flex-col">
+    <header
+      class="nav-glass fixed top-0 left-0 right-0 z-50 h-14 flex items-center px-4 sm:px-6 gap-3"
+      role="banner"
+    >
+      <a href="/" class="flex items-center gap-2.5 shrink-0 mr-2" aria-label="Beranda">
+        <div class="w-7 h-7 rounded-lg bg-primary flex items-center justify-center shadow-sm">
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            class="text-primary-foreground"
+          >
+            <path
+              d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"></path>
+          </svg>
+        </div>
+        <span class="text-sm font-bold text-foreground hidden sm:block">Undangan Khitanan</span>
+        <span class="text-sm font-bold text-foreground sm:hidden">Khitanan</span>
+      </a>
+
+      <nav
+        class="flex-1 flex items-center overflow-x-auto scrollbar-thin gap-0.5"
+        role="navigation"
+        aria-label="Navigasi utama"
+      >
+        {
+          NAV.map(({ href, label }) => (
+            <a
+              href={href}
+              class={["nav-link", current === href ? "active" : ""].join(" ")}
+              aria-current={current === href ? "page" : undefined}
+            >
+              {label}
+            </a>
+          ))
+        }
+      </nav>
+
+      <div class="flex items-center gap-1.5 shrink-0">
+        <button
+          id="pwa-install-btn"
+          class="pwa-install-btn"
+          aria-label="Install aplikasi"
+          title="Install aplikasi"
+        >
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+            <path
+              d="M12 3v12m0 0l-4-4m4 4l4-4M3 17v2a2 2 0 002 2h14a2 2 0 002-2v-2"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"></path>
+          </svg>
+          Install
+        </button>
+
+        <button
+          id="theme-toggle"
+          class="theme-toggle"
+          aria-label="Toggle tema gelap terang"
+          title="Toggle tema"
+        >
+          <svg
+            id="icon-sun"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            class="hidden dark:block"
+          >
+            <circle cx="12" cy="12" r="5" stroke="currentColor" stroke-width="2"></circle>
+            <path
+              d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"></path>
+          </svg>
+          <svg
+            id="icon-moon"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            class="block dark:hidden"
+          >
+            <path
+              d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"></path>
+          </svg>
+        </button>
+      </div>
     </header>
 
-    <nav class="bg-card border-b border-border flex overflow-x-auto">
-      {
-        NAV.map(({ href, label }) => (
-          <a
-            href={href}
-            class={[
-              "px-5 py-3 text-xs font-semibold whitespace-nowrap border-b-2 transition-colors",
-              current === href
-                ? "text-primary border-primary"
-                : "text-muted-foreground border-transparent hover:bg-muted",
-            ].join(" ")}
-          >
-            {label}
-          </a>
-        ))
-      }
-    </nav>
-
-    <main class="max-w-5xl mx-auto px-5 py-6 space-y-4">
+    <main
+      class="flex-1 w-full max-w-5xl mx-auto px-4 sm:px-6 py-6 space-y-4 slide-up"
+      style="padding-top: calc(3.5rem + 1.5rem);"
+    >
       <slot />
     </main>
+
+    <footer class="mt-auto border-t border-border/50 py-4 px-4 sm:px-6" role="contentinfo">
+      <p class="text-center text-xs text-muted-foreground">
+        &copy; 2026 &mdash; Build With Love By
+        <span class="font-semibold text-primary">Yahya Zulfikri</span>
+      </p>
+    </footer>
+
+    <script is:inline>
+      const toggle = document.getElementById("theme-toggle");
+      toggle?.addEventListener("click", () => {
+        const isDark = document.documentElement.classList.toggle("dark");
+        localStorage.setItem("theme", isDark ? "dark" : "light");
+      });
+
+      let deferredPrompt = null;
+      const installBtn = document.getElementById("pwa-install-btn");
+
+      window.addEventListener("beforeinstallprompt", (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        installBtn?.classList.add("visible");
+      });
+
+      installBtn?.addEventListener("click", async () => {
+        if (!deferredPrompt) return;
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === "accepted") {
+          installBtn.classList.remove("visible");
+        }
+        deferredPrompt = null;
+      });
+
+      window.addEventListener("appinstalled", () => {
+        installBtn?.classList.remove("visible");
+        deferredPrompt = null;
+      });
+
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () => {
+          navigator.serviceWorker.register("/sw.js").catch(() => {});
+        });
+      }
+    </script>
   </body>
 </html>

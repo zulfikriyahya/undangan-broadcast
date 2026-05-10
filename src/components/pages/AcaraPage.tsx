@@ -62,105 +62,137 @@ export default function AcaraPage({ event }: Props) {
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Setup Acara</CardTitle>
-      </CardHeader>
-      <CardContent>
-        {alert && (
-          <Alert variant={alert.variant} className="mb-4">
-            <AlertDescription>{alert.message}</AlertDescription>
-          </Alert>
-        )}
+    <div className="fade-in space-y-4">
+      <div className="mb-1">
+        <h1 className="text-xl font-bold text-foreground">Setup Acara</h1>
+        <p className="text-xs text-muted-foreground mt-0.5">
+          Isi informasi acara khitanan untuk digunakan di kartu undangan dan pesan broadcast.
+        </p>
+      </div>
 
-        <form ref={formRef} onSubmit={handleSubmit} method="post" encType="multipart/form-data">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Field label="Nama Anak *" id="nama_anak">
-              <Input
-                id="nama_anak"
-                name="nama_anak"
-                required
-                defaultValue={event?.nama_anak ?? ""}
-                placeholder="Muhammad Farhan"
-              />
-            </Field>
+      {alert && (
+        <Alert variant={alert.variant}>
+          <AlertDescription>{alert.message}</AlertDescription>
+        </Alert>
+      )}
 
-            <Field label="Anak Ke- *" id="anak_ke">
-              <Input
-                id="anak_ke"
-                name="anak_ke"
-                type="number"
-                min="1"
-                required
-                defaultValue={event?.anak_ke ?? 1}
-              />
-            </Field>
+      <form ref={formRef} onSubmit={handleSubmit} method="post" encType="multipart/form-data">
+        <div className="bento-grid">
+          <Card className="sm:col-span-2">
+            <CardHeader>
+              <CardTitle>Identitas Anak</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Field label="Nama Anak *" id="nama_anak">
+                  <Input
+                    id="nama_anak"
+                    name="nama_anak"
+                    required
+                    defaultValue={event?.nama_anak ?? ""}
+                    placeholder="Muhammad Farhan"
+                  />
+                </Field>
 
-            <Field label="Nama Bapak *" id="nama_bapak">
-              <Input
-                id="nama_bapak"
-                name="nama_bapak"
-                required
-                defaultValue={event?.nama_bapak ?? ""}
-                placeholder="Ahmad Fauzi"
-              />
-            </Field>
+                <Field label="Anak Ke- *" id="anak_ke">
+                  <Input
+                    id="anak_ke"
+                    name="anak_ke"
+                    type="number"
+                    min="1"
+                    required
+                    defaultValue={event?.anak_ke ?? 1}
+                  />
+                </Field>
 
-            <Field label="Nama Ibu *" id="nama_ibu">
-              <Input
-                id="nama_ibu"
-                name="nama_ibu"
-                required
-                defaultValue={event?.nama_ibu ?? ""}
-                placeholder="Siti Rahayu"
-              />
-            </Field>
+                <Field label="Nama Bapak *" id="nama_bapak">
+                  <Input
+                    id="nama_bapak"
+                    name="nama_bapak"
+                    required
+                    defaultValue={event?.nama_bapak ?? ""}
+                    placeholder="Ahmad Fauzi"
+                  />
+                </Field>
 
-            <Field label="Alamat Acara *" id="alamat" className="sm:col-span-2">
-              <Textarea
-                id="alamat"
-                name="alamat"
-                required
-                defaultValue={event?.alamat ?? ""}
-                placeholder="Jl. Mawar No. 12, RT 03/05, Kel. Cipete"
-              />
-            </Field>
+                <Field label="Nama Ibu *" id="nama_ibu">
+                  <Input
+                    id="nama_ibu"
+                    name="nama_ibu"
+                    required
+                    defaultValue={event?.nama_ibu ?? ""}
+                    placeholder="Siti Rahayu"
+                  />
+                </Field>
+              </div>
+            </CardContent>
+          </Card>
 
-            <Field label="Tanggal & Waktu Acara *" id="tanggal">
-              <Input
-                id="tanggal"
-                name="tanggal"
-                type="datetime-local"
-                required
-                defaultValue={event?.tanggal ?? ""}
-              />
-            </Field>
-
-            <Field label="Foto Anak" id="foto">
-              <Input
-                id="foto"
-                name="foto"
-                type="file"
-                accept="image/*"
-                onChange={handleFileChange}
-              />
-              {preview && (
-                <img
-                  src={preview}
-                  alt="Preview foto"
-                  className="mt-2 w-20 h-20 object-cover rounded-lg border-2 border-primary"
+          <Card>
+            <CardHeader>
+              <CardTitle>Waktu &amp; Tempat</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Field label="Tanggal &amp; Waktu Acara *" id="tanggal">
+                <Input
+                  id="tanggal"
+                  name="tanggal"
+                  type="datetime-local"
+                  required
+                  defaultValue={event?.tanggal ?? ""}
                 />
-              )}
-            </Field>
-          </div>
+              </Field>
 
-          <div className="mt-5">
-            <Button type="submit" disabled={loading}>
-              {loading ? "Menyimpan..." : "Simpan Data Acara"}
-            </Button>
-          </div>
-        </form>
-      </CardContent>
-    </Card>
+              <Field label="Alamat Acara *" id="alamat">
+                <Textarea
+                  id="alamat"
+                  name="alamat"
+                  required
+                  defaultValue={event?.alamat ?? ""}
+                  placeholder="Jl. Mawar No. 12, RT 03/05, Kel. Cipete"
+                />
+              </Field>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Foto Anak</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <Field label="Upload Foto" id="foto">
+                <Input
+                  id="foto"
+                  name="foto"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                />
+              </Field>
+              {preview ? (
+                <div className="flex items-center gap-3 mt-1">
+                  <img
+                    src={preview}
+                    alt="Preview foto"
+                    className="w-20 h-20 object-cover rounded-xl border-2 border-primary shadow-sm"
+                  />
+                  <p className="text-xs text-muted-foreground">Preview foto anak</p>
+                </div>
+              ) : (
+                <div className="w-20 h-20 rounded-xl bg-muted border-2 border-dashed border-border flex items-center justify-center text-2xl">
+                  &#128102;
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="mt-4 flex justify-end">
+          <Button type="submit" disabled={loading} size="lg">
+            {loading ? "Menyimpan..." : "Simpan Data Acara"}
+          </Button>
+        </div>
+      </form>
+    </div>
   );
 }

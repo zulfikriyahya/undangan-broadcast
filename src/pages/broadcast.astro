@@ -11,6 +11,9 @@ const tamu = rawTamu
   .map((t) => ({ ...t, last_status: t.broadcast_status ?? null }));
 ---
 
-<Layout title="Broadcast WhatsApp">
+<Layout
+  title="Broadcast WhatsApp"
+  description="Kirim undangan khitanan massal via WhatsApp dengan template pesan yang dapat dikustomisasi."
+>
   <BroadcastPage event={event} tamu={tamu} client:load />
 </Layout>
