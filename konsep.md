@@ -1,6 +1,8 @@
 Refactor dan finalkan secara dry code tanpa komentar dan emoticon.
 berikan saya masing masing filenya.
-Step 1
+
+# UI
+## Step 1
 - Update Layout
 - Update Navbar agar sticky
 - Tambahkan Footer (&copy; 2026 - Build With Love By Yahya Zulfikri)
@@ -12,7 +14,12 @@ Step 1
 - Gunakan Animasi Yang minimal namun elegan dan professional
 - Jadikan Dapat Di Install sebagai PWA, dan jadikan mudah dicari di google (SEO Optimalization)
 
-Step 2
+## Step 2
+
+
+
+# Fitur
+## Step 1
 - Login Menggunakan Gmail (OAuth)
 - Tautkan dengan Whatsapp Masing-Masing
 -
