@@ -4,8 +4,8 @@ import * as XLSX from "xlsx";
 export const GET: APIRoute = () => {
   const ws = XLSX.utils.aoa_to_sheet([
     ["nama_lengkap", "alamat", "no_telpon"],
-    ["Budi Santoso", "Jl. Melati No. 5, Jakarta", "08123456789"],
-    ["Sari Dewi", "Jl. Anggrek No. 10, Bogor", ""],
+    ["Yahya Zulfikri", "Kp. Kebon Cau RT 001 RW 005, Pandeglang - Banten", "0895351856267"],
+    ["Fera Oktapia", "Kp. Kebon Cau RT 001 RW 005, Pandeglang - Banten", "0895351856267"],
   ]);
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, "Tamu");
