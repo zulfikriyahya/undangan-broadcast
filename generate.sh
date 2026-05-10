@@ -20,6 +20,7 @@ EXCLUDE_DIRS=(
 EXCLUDE_FILES=(
   "generate.sh"
   "draft.md"
+  ".env"
   ".gitignore"
   ".gitattributes"
   ".npmrc"

@@ -16,20 +16,6 @@ export default defineConfig({
 ```
 ---
 
-## .env
-```bash
-SITE_URL=http://localhost:4000
-WA_ENDPOINT=https://wapi.zedlabs.id/api/messages/send
-WA_API_KEY=cedb42552eea73ca6e897807b80f07fd1e081aa1f93173fe
-DB_HOST=127.0.0.1
-DB_PORT=3306
-DB_USER=root
-DB_PASS=18012000
-DB_NAME=undangan_khitanan
-
-```
----
-
 ## .env-example
 ```text
 SITE_URL=http://localhost:4321
