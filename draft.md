@@ -930,7 +930,95 @@ interface Props {
 
 const RENDER_ID = "kartu-render-target";
 
-function buildKartuHTML(event: Event, namaTamu: string): string {
+interface Theme {
+  id: string;
+  label: string;
+  bg: string;
+  accent: string;
+  gold: string;
+  text: string;
+  subtext: string;
+  panelBg: string;
+  divider: string;
+  badge: string;
+}
+
+const THEMES: Theme[] = [
+  {
+    id: "emerald",
+    label: "Emerald",
+    bg: "linear-gradient(135deg, #0d3321 0%, #1b5e3b 45%, #2d8a5e 100%)",
+    accent: "#d4af37",
+    gold: "#f0d060",
+    text: "#ffffff",
+    subtext: "rgba(255,255,255,0.75)",
+    panelBg: "rgba(0,0,0,0.28)",
+    divider: "rgba(212,175,55,0.5)",
+    badge: "rgba(212,175,55,0.15)",
+  },
+  {
+    id: "navy",
+    label: "Navy Gold",
+    bg: "linear-gradient(135deg, #0a1628 0%, #1a3050 45%, #1e4976 100%)",
+    accent: "#c9a84c",
+    gold: "#e8c96a",
+    text: "#ffffff",
+    subtext: "rgba(255,255,255,0.72)",
+    panelBg: "rgba(0,0,0,0.30)",
+    divider: "rgba(201,168,76,0.5)",
+    badge: "rgba(201,168,76,0.15)",
+  },
+  {
+    id: "maroon",
+    label: "Maroon",
+    bg: "linear-gradient(135deg, #2d0a14 0%, #5c1a28 45%, #8b2d42 100%)",
+    accent: "#e8c97a",
+    gold: "#f5dfa0",
+    text: "#ffffff",
+    subtext: "rgba(255,255,255,0.72)",
+    panelBg: "rgba(0,0,0,0.28)",
+    divider: "rgba(232,201,122,0.5)",
+    badge: "rgba(232,201,122,0.15)",
+  },
+  {
+    id: "purple",
+    label: "Royal Purple",
+    bg: "linear-gradient(135deg, #1a0a2e 0%, #2d1b5e 45%, #4a2d8a 100%)",
+    accent: "#d4a0ff",
+    gold: "#e8c8ff",
+    text: "#ffffff",
+    subtext: "rgba(255,255,255,0.72)",
+    panelBg: "rgba(0,0,0,0.28)",
+    divider: "rgba(212,160,255,0.45)",
+    badge: "rgba(212,160,255,0.15)",
+  },
+  {
+    id: "slate",
+    label: "Slate Silver",
+    bg: "linear-gradient(135deg, #0f1923 0%, #1e2d3d 45%, #2d4158 100%)",
+    accent: "#94a3b8",
+    gold: "#cbd5e1",
+    text: "#ffffff",
+    subtext: "rgba(255,255,255,0.70)",
+    panelBg: "rgba(0,0,0,0.28)",
+    divider: "rgba(148,163,184,0.45)",
+    badge: "rgba(148,163,184,0.15)",
+  },
+  {
+    id: "rose",
+    label: "Rose Gold",
+    bg: "linear-gradient(135deg, #2d0d18 0%, #5c1e30 45%, #8c3a50 100%)",
+    accent: "#f4b8c8",
+    gold: "#fad4de",
+    text: "#ffffff",
+    subtext: "rgba(255,255,255,0.72)",
+    panelBg: "rgba(0,0,0,0.25)",
+    divider: "rgba(244,184,200,0.45)",
+    badge: "rgba(244,184,200,0.15)",
+  },
+];
+
+function buildKartuHTML(event: Event, namaTamu: string, theme: Theme): string {
   const tgl = new Date(event.tanggal);
   const tglFmt = tgl.toLocaleDateString("id-ID", {
     weekday: "long",
@@ -939,52 +1027,191 @@ function buildKartuHTML(event: Event, namaTamu: string): string {
     year: "numeric",
   });
   const waktu = tgl.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }) + " WIB";
-  const fotoHtml = event.foto_path
-    ? `<img src="${event.foto_path}" style="width:100%;height:100%;object-fit:cover"/>`
-    : `<span style="font-size:3rem">&#x1F466;</span>`;
+  const foto = event.foto_path
+    ? `<img src="${event.foto_path}" style="width:100%;height:100%;object-fit:cover;display:block"/>`
+    : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:3.5rem">&#x1F466;</div>`;
 
   return `
-<div style="width:800px;height:500px;position:relative;overflow:hidden;font-family:Georgia,serif;background:linear-gradient(135deg,#1b4332 0%,#2d6a4f 40%,#52b788 100%)">
-  <svg style="position:absolute;top:0;left:0;width:160px;opacity:.25" viewBox="0 0 160 160">
-    <circle cx="0" cy="0" r="140" fill="none" stroke="#fff" stroke-width="1.5"/>
-    <circle cx="0" cy="0" r="110" fill="none" stroke="#fff" stroke-width="1"/>
-    <circle cx="0" cy="0" r="80"  fill="none" stroke="#d4af37" stroke-width="1.5"/>
+<div style="
+  width:800px;height:500px;position:relative;overflow:hidden;
+  font-family:'Georgia',serif;
+  background:${theme.bg};
+">
+
+  <!-- Ornamen lingkaran kiri atas -->
+  <svg style="position:absolute;top:-40px;left:-40px;width:220px;height:220px;opacity:0.18" viewBox="0 0 220 220">
+    <circle cx="110" cy="110" r="100" fill="none" stroke="${theme.accent}" stroke-width="1.5"/>
+    <circle cx="110" cy="110" r="78"  fill="none" stroke="${theme.gold}"   stroke-width="0.8"/>
+    <circle cx="110" cy="110" r="56"  fill="none" stroke="${theme.accent}" stroke-width="1.2"/>
   </svg>
-  <svg style="position:absolute;bottom:0;right:0;width:160px;opacity:.25;transform:rotate(180deg)" viewBox="0 0 160 160">
-    <circle cx="0" cy="0" r="140" fill="none" stroke="#fff" stroke-width="1.5"/>
-    <circle cx="0" cy="0" r="110" fill="none" stroke="#fff" stroke-width="1"/>
-    <circle cx="0" cy="0" r="80"  fill="none" stroke="#d4af37" stroke-width="1.5"/>
+
+  <!-- Ornamen lingkaran kanan bawah -->
+  <svg style="position:absolute;bottom:-50px;right:-50px;width:240px;height:240px;opacity:0.15" viewBox="0 0 240 240">
+    <circle cx="120" cy="120" r="110" fill="none" stroke="${theme.accent}" stroke-width="1.5"/>
+    <circle cx="120" cy="120" r="88"  fill="none" stroke="${theme.gold}"   stroke-width="0.8"/>
+    <circle cx="120" cy="120" r="66"  fill="none" stroke="${theme.accent}" stroke-width="1.2"/>
   </svg>
-  <div style="position:absolute;left:0;top:0;width:260px;height:500px;background:rgba(0,0,0,.25);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px">
-    <div style="width:160px;height:160px;border-radius:50%;border:4px solid #d4af37;overflow:hidden;background:#1b4332;display:flex;align-items:center;justify-content:center">
-      ${fotoHtml}
+
+  <!-- Ornamen bunga sudut kiri atas -->
+  <svg style="position:absolute;top:0;left:0;width:90px;height:90px;opacity:0.22" viewBox="0 0 90 90">
+    <path d="M0 0 Q45 20 90 0 Q70 45 90 90 Q45 70 0 90 Q20 45 0 0Z" fill="${theme.accent}"/>
+  </svg>
+
+  <!-- Ornamen bunga sudut kanan bawah -->
+  <svg style="position:absolute;bottom:0;right:0;width:90px;height:90px;opacity:0.22;transform:rotate(180deg)" viewBox="0 0 90 90">
+    <path d="M0 0 Q45 20 90 0 Q70 45 90 90 Q45 70 0 90 Q20 45 0 0Z" fill="${theme.accent}"/>
+  </svg>
+
+  <!-- Garis dekoratif atas -->
+  <div style="position:absolute;top:14px;left:110px;right:20px;height:1px;background:linear-gradient(to right,transparent,${theme.accent},transparent);opacity:0.5"></div>
+  <!-- Garis dekoratif bawah -->
+  <div style="position:absolute;bottom:14px;left:110px;right:20px;height:1px;background:linear-gradient(to right,transparent,${theme.accent},transparent);opacity:0.5"></div>
+
+  <!-- Panel kiri — foto + nama orang tua -->
+  <div style="
+    position:absolute;left:0;top:0;width:255px;height:500px;
+    background:${theme.panelBg};
+    backdrop-filter:blur(6px);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;
+    padding:0 20px;
+  ">
+    <!-- Frame foto -->
+    <div style="position:relative;width:148px;height:148px">
+      <!-- Ring luar -->
+      <div style="
+        position:absolute;inset:-6px;border-radius:50%;
+        border:2px solid ${theme.accent};opacity:0.6;
+      "></div>
+      <!-- Ring dalam -->
+      <div style="
+        position:absolute;inset:-2px;border-radius:50%;
+        border:2px solid ${theme.gold};
+      "></div>
+      <!-- Foto -->
+      <div style="
+        width:148px;height:148px;border-radius:50%;overflow:hidden;
+        background:rgba(0,0,0,0.3);
+      ">${foto}</div>
+      <!-- Ornamen titik -->
+      ${[0, 60, 120, 180, 240, 300]
+        .map(
+          (deg) => `
+        <div style="
+          position:absolute;width:6px;height:6px;border-radius:50%;
+          background:${theme.accent};
+          top:50%;left:50%;
+          transform:translate(-50%,-50%) rotate(${deg}deg) translateY(-84px);
+        "></div>
+      `
+        )
+        .join("")}
     </div>
-    <p style="color:#d4af37;font-size:13px;text-align:center;padding:0 16px;line-height:1.5">
-      Putra ke-${event.anak_ke} dari<br/>
-      <strong style="color:#fff">${event.nama_bapak}</strong><br/>
-      &amp; <strong style="color:#fff">${event.nama_ibu}</strong>
-    </p>
-  </div>
-  <div style="position:absolute;left:260px;top:20px;width:2px;height:460px;background:linear-gradient(to bottom,transparent,#d4af37,#d4af37,transparent)"></div>
-  <div style="position:absolute;left:278px;top:0;right:0;height:500px;display:flex;flex-direction:column;justify-content:center;padding:24px 32px 24px 20px">
-    <p style="color:rgba(255,255,255,.7);font-size:11px;letter-spacing:2px;text-transform:uppercase;margin-bottom:2px">Kepada Yth.</p>
-    <p style="color:#fff;font-size:20px;font-weight:bold;margin-bottom:12px;border-bottom:1px solid rgba(212,175,55,.4);padding-bottom:8px">${namaTamu}</p>
-    <p style="color:rgba(255,255,255,.85);font-size:12px;line-height:1.7;margin-bottom:12px">
-      Dengan penuh kebahagiaan, kami mengundang Bapak/Ibu/Saudara/i untuk hadir dalam acara
-      <strong style="color:#d4af37">Khitanan</strong> putra kami:
-    </p>
-    <p style="color:#d4af37;font-size:28px;font-weight:bold;text-align:center;text-shadow:0 2px 8px rgba(0,0,0,.4);margin-bottom:14px;letter-spacing:1px">${event.nama_anak}</p>
-    <div style="background:rgba(0,0,0,.25);border-radius:8px;padding:10px 14px;font-size:12px;color:#fff;line-height:2">
-      <div>&#x1F4C5; <strong>${tglFmt}</strong></div>
-      <div>&#x23F0; <strong>${waktu}</strong></div>
-      <div>&#x1F4CD; <strong>${event.alamat}</strong></div>
+
+    <!-- Nama orang tua -->
+    <div style="text-align:center;line-height:1.6">
+      <p style="color:${theme.accent};font-size:11px;letter-spacing:2px;text-transform:uppercase;margin-bottom:4px;font-family:Georgia,serif">
+        Putra ke-${event.anak_ke}
+      </p>
+      <div style="width:40px;height:1px;background:${theme.accent};margin:0 auto 8px;opacity:0.6"></div>
+      <p style="color:${theme.subtext};font-size:12px;margin-bottom:2px">Pasangan</p>
+      <p style="color:${theme.text};font-size:13px;font-weight:bold;margin-bottom:1px">${event.nama_bapak}</p>
+      <p style="color:${theme.accent};font-size:11px;margin-bottom:1px">&amp;</p>
+      <p style="color:${theme.text};font-size:13px;font-weight:bold">${event.nama_ibu}</p>
     </div>
-    <p style="color:rgba(255,255,255,.5);font-size:10px;text-align:right;margin-top:10px;font-style:italic">Kehadiran Anda adalah kehormatan bagi kami</p>
   </div>
+
+  <!-- Divider vertikal -->
+  <div style="
+    position:absolute;left:255px;top:24px;width:1px;height:452px;
+    background:linear-gradient(to bottom,transparent,${theme.divider} 20%,${theme.divider} 80%,transparent);
+  "></div>
+
+  <!-- Konten kanan -->
+  <div style="
+    position:absolute;left:268px;top:0;right:0;height:500px;
+    display:flex;flex-direction:column;justify-content:center;
+    padding:28px 32px 28px 20px;
+  ">
+    <!-- Label undangan -->
+    <div style="
+      display:inline-flex;align-items:center;gap:8px;
+      margin-bottom:10px;
+    ">
+      <div style="width:24px;height:1px;background:${theme.accent}"></div>
+      <p style="color:${theme.accent};font-size:10px;letter-spacing:3px;text-transform:uppercase">
+        Undangan Khitanan
+      </p>
+      <div style="width:24px;height:1px;background:${theme.accent}"></div>
+    </div>
+
+    <!-- Kepada -->
+    <p style="color:${theme.subtext};font-size:11px;margin-bottom:3px;font-style:italic">
+      Kepada Yang Terhormat,
+    </p>
+    <p style="
+      color:${theme.text};font-size:19px;font-weight:bold;
+      border-bottom:1px solid ${theme.divider};
+      padding-bottom:10px;margin-bottom:12px;
+      line-height:1.3;
+    ">${namaTamu}</p>
+
+    <!-- Kalimat undangan -->
+    <p style="color:${theme.subtext};font-size:11.5px;line-height:1.8;margin-bottom:14px">
+      Dengan penuh kebahagiaan, kami mengundang kehadiran Bapak/Ibu/Saudara/i
+      dalam <span style="color:${theme.accent};font-weight:bold">Walimatul Khitan</span> putra kami:
+    </p>
+
+    <!-- Nama anak -->
+    <div style="text-align:center;margin-bottom:16px;position:relative">
+      <div style="
+        background:${theme.badge};
+        border:1px solid ${theme.divider};
+        border-radius:8px;
+        padding:10px 16px;
+        display:inline-block;
+        min-width:200px;
+      ">
+        <p style="
+          color:${theme.accent};font-size:26px;font-weight:bold;
+          letter-spacing:1.5px;line-height:1.2;
+          text-shadow:0 2px 12px rgba(0,0,0,0.4);
+          margin:0;
+        ">${event.nama_anak}</p>
+      </div>
+    </div>
+
+    <!-- Detail acara -->
+    <div style="
+      background:${theme.panelBg};
+      border:1px solid ${theme.divider};
+      border-radius:8px;padding:10px 14px;
+      font-size:11.5px;color:${theme.text};line-height:2;
+    ">
+      <div style="display:flex;align-items:flex-start;gap:8px">
+        <span style="color:${theme.accent};font-size:13px;margin-top:2px">&#x1F4C5;</span>
+        <span><strong>${tglFmt}</strong></span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="color:${theme.accent};font-size:13px">&#x23F0;</span>
+        <span><strong>${waktu}</strong></span>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:8px">
+        <span style="color:${theme.accent};font-size:13px;margin-top:2px">&#x1F4CD;</span>
+        <span style="line-height:1.5"><strong>${event.alamat}</strong></span>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <p style="
+      color:${theme.subtext};font-size:10px;text-align:right;
+      margin-top:10px;font-style:italic;opacity:0.7;
+    ">Kehadiran Anda adalah kehormatan bagi kami</p>
+  </div>
+
 </div>`;
 }
 
-async function generatePNG(event: Event, namaTamu: string): Promise<Blob> {
+async function generatePNG(event: Event, namaTamu: string, theme: Theme): Promise<Blob> {
   let target = document.getElementById(RENDER_ID);
   if (!target) {
     target = document.createElement("div");
@@ -992,7 +1219,7 @@ async function generatePNG(event: Event, namaTamu: string): Promise<Blob> {
     target.style.cssText = "position:fixed;left:-9999px;top:0;z-index:-1";
     document.body.appendChild(target);
   }
-  target.innerHTML = buildKartuHTML(event, namaTamu);
+  target.innerHTML = buildKartuHTML(event, namaTamu, theme);
   const canvas = await (window as any).html2canvas(target.firstElementChild, {
     scale: 2,
     useCORS: true,
@@ -1011,8 +1238,13 @@ function downloadBlob(blob: Blob, filename: string) {
   setTimeout(() => URL.revokeObjectURL(url), 3000);
 }
 
-async function uploadKartu(event: Event, tamuId: number, namaTamu: string): Promise<string | null> {
-  const blob = await generatePNG(event, namaTamu);
+async function uploadKartu(
+  event: Event,
+  tamuId: number,
+  namaTamu: string,
+  theme: Theme
+): Promise<string | null> {
+  const blob = await generatePNG(event, namaTamu, theme);
   const filename = `${sanitizeFilename(namaTamu)}.png`;
   const fd = new FormData();
   fd.append("file", blob, filename);
@@ -1037,6 +1269,7 @@ interface ProgressState {
 
 export default function KartuPage({ event, tamu }: Props) {
   const [selectedId, setSelectedId] = useState("");
+  const [selectedTheme, setSelectedTheme] = useState<Theme>(THEMES[0]);
   const [previewHtml, setPreviewHtml] = useState("");
   const [progress, setProgress] = useState<ProgressState | null>(null);
   const [tamuData, setTamuData] = useState(tamu);
@@ -1051,12 +1284,12 @@ export default function KartuPage({ event, tamu }: Props) {
 
   function preview() {
     if (!event || !selectedTamu) return;
-    setPreviewHtml(buildKartuHTML(event, selectedTamu.nama));
+    setPreviewHtml(buildKartuHTML(event, selectedTamu.nama, selectedTheme));
   }
 
   async function downloadSatu() {
     if (!event || !selectedTamu) return;
-    const blob = await generatePNG(event, selectedTamu.nama);
+    const blob = await generatePNG(event, selectedTamu.nama, selectedTheme);
     downloadBlob(blob, `${sanitizeFilename(selectedTamu.nama)}.png`);
   }
 
@@ -1068,7 +1301,7 @@ export default function KartuPage({ event, tamu }: Props) {
         value: Math.round(((i + 1) / tamu.length) * 100),
         label: `Generating ${i + 1}/${tamu.length}: ${tamu[i].nama}`,
       });
-      const blob = await generatePNG(event, tamu[i].nama);
+      const blob = await generatePNG(event, tamu[i].nama, selectedTheme);
       downloadBlob(blob, `${sanitizeFilename(tamu[i].nama)}.png`);
       await sleep(600);
     }
@@ -1078,7 +1311,7 @@ export default function KartuPage({ event, tamu }: Props) {
   async function uploadSatu() {
     if (!event || !selectedTamu) return;
     setProgress({ value: 0, label: `Uploading ${selectedTamu.nama}...` });
-    const url = await uploadKartu(event, selectedTamu.id, selectedTamu.nama);
+    const url = await uploadKartu(event, selectedTamu.id, selectedTamu.nama, selectedTheme);
     setProgress({ value: 100, label: url ? "Upload berhasil!" : "Upload gagal." });
     if (url) refreshKartuStatus();
   }
@@ -1091,7 +1324,7 @@ export default function KartuPage({ event, tamu }: Props) {
         value: Math.round(((i + 1) / tamu.length) * 100),
         label: `Upload ${i + 1}/${tamu.length}: ${tamu[i].nama}`,
       });
-      await uploadKartu(event, tamu[i].id, tamu[i].nama);
+      await uploadKartu(event, tamu[i].id, tamu[i].nama, selectedTheme);
       await sleep(500);
     }
     setProgress({ value: 100, label: "Semua kartu berhasil di-upload!" });
@@ -1116,6 +1349,11 @@ export default function KartuPage({ event, tamu }: Props) {
 
   return (
     <div className="fade-in space-y-4">
+      <script
+        src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"
+        async
+      />
+
       <div className="mb-1">
         <h1 className="text-xl font-bold text-foreground">Kartu Undangan</h1>
         <p className="text-xs text-muted-foreground mt-0.5">
@@ -1123,10 +1361,40 @@ export default function KartuPage({ event, tamu }: Props) {
         </p>
       </div>
 
-      <script
-        src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"
-        async
-      />
+      <Card>
+        <CardHeader>
+          <CardTitle>Pilih Tema Warna</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-wrap gap-2">
+            {THEMES.map((t) => (
+              <button
+                key={t.id}
+                onClick={() => {
+                  setSelectedTheme(t);
+                  if (selectedTamu && event)
+                    setPreviewHtml(buildKartuHTML(event, selectedTamu.nama, t));
+                }}
+                title={t.label}
+                className={`relative flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-semibold transition-all duration-200 ${
+                  selectedTheme.id === t.id
+                    ? "border-primary ring-2 ring-primary/30 scale-105"
+                    : "border-border hover:border-primary/50"
+                }`}
+              >
+                <span
+                  className="w-4 h-4 rounded-full shrink-0 shadow-sm"
+                  style={{ background: t.bg }}
+                />
+                {t.label}
+                {selectedTheme.id === t.id && (
+                  <span className="absolute -top-1 -right-1 w-3 h-3 bg-primary rounded-full border-2 border-background" />
+                )}
+              </button>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
 
       <div className="bento-grid">
         <Card>
@@ -1212,19 +1480,34 @@ export default function KartuPage({ event, tamu }: Props) {
       {previewHtml && (
         <Card>
           <CardHeader>
-            <CardTitle>Preview Kartu — {selectedTamu?.nama}</CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle>
+                Preview — {selectedTamu?.nama}
+                <span className="ml-2 text-xs font-normal text-muted-foreground">
+                  Tema: {selectedTheme.label}
+                </span>
+              </CardTitle>
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="bg-muted/40 rounded-lg p-3 overflow-auto">
-              <div
-                style={{
-                  transformOrigin: "top left",
-                  transform: "scale(0.55)",
-                  width: 800,
-                  height: 500,
-                }}
-                dangerouslySetInnerHTML={{ __html: previewHtml }}
-              />
+            <div className="bg-muted/40 rounded-xl p-4 overflow-auto">
+              <div className="relative" style={{ height: 285, width: "100%", maxWidth: 480 }}>
+                <div
+                  style={{
+                    transformOrigin: "top left",
+                    transform: "scale(0.6)",
+                    width: 800,
+                    height: 500,
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    borderRadius: 12,
+                    overflow: "hidden",
+                    boxShadow: "0 8px 32px rgba(0,0,0,0.25)",
+                  }}
+                  dangerouslySetInnerHTML={{ __html: previewHtml }}
+                />
+              </div>
             </div>
           </CardContent>
         </Card>
