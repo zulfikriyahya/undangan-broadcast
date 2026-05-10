@@ -1,25 +1,38 @@
 {
   "name": "undangan-khitanan",
   "type": "module",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "engines": {
     "node": ">=22.12.0"
   },
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
-    "preview": "astro preview",
-    "astro": "astro"
+    "preview": "astro preview"
   },
   "dependencies": {
     "@astrojs/node": "^10.1.0",
+    "@astrojs/react": "^5.0.4",
+    "@radix-ui/react-dialog": "^1.1.0",
+    "@radix-ui/react-label": "^2.1.0",
+    "@radix-ui/react-select": "^2.1.0",
+    "@radix-ui/react-slot": "^1.1.0",
     "astro": "^6.3.1",
-    "better-sqlite3": "^12.9.0",
+    "class-variance-authority": "^0.7.0",
+    "clsx": "^2.1.0",
     "dotenv": "^17.4.2",
+    "lucide-react": "^0.383.0",
+    "mysql2": "^3.11.0",
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6",
+    "tailwind-merge": "^2.3.0",
+    "tailwindcss": "^3.4.0",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
-    "@types/better-sqlite3": "^7.6.13",
-    "@types/node": "^25.6.2"
+    "@astrojs/tailwind": "^5.1.0",
+    "@types/node": "^25.6.2",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3"
   }
 }

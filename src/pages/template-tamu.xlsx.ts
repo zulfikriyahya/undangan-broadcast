@@ -1,4 +1,3 @@
-// src/pages/template-tamu.xlsx.ts
 import type { APIRoute } from "astro";
 import * as XLSX from "xlsx";
 

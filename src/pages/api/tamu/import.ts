@@ -1,56 +1,55 @@
-// src/pages/api/tamu/import.ts
 import type { APIRoute } from "astro";
 import * as XLSX from "xlsx";
-import db from "../../../lib/db";
-import { normalizePhone } from "../../../lib/phone";
+import { bootstrap, q } from "../../../lib/db";
+import { normalizePhone } from "../../../lib/utils";
+
+const json = (data: unknown, status = 200) =>
+  new Response(JSON.stringify(data), { status, headers: { "Content-Type": "application/json" } });
+
+const normalize = (s: string) => s.toLowerCase().replace(/[\s_]/g, "");
+
+const COLUMN_MAP = {
+  nama: ["namalengkap", "nama"],
+  alamat: ["alamat"],
+  telpon: ["notelpon", "notelepon", "nohp", "telepon", "hp", "phone"],
+};
+
+function findKey(row: Record<string, unknown>, candidates: string[]) {
+  return Object.keys(row).find((k) => candidates.includes(normalize(k)));
+}
 
 export const POST: APIRoute = async ({ request }) => {
+  await bootstrap();
   const form = await request.formData();
   const file = form.get("file") as File;
+  if (!file || file.size === 0) return json({ ok: false, error: "File tidak ditemukan" }, 400);
 
-  if (!file || file.size === 0) {
-    return new Response(JSON.stringify({ ok: false, error: "File tidak ditemukan" }), {
-      status: 400,
+  const wb = XLSX.read(Buffer.from(await file.arrayBuffer()), { type: "buffer" });
+  const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { defval: "" }) as Record<
+    string,
+    unknown
+  >[];
+
+  const batch: { nama: string; alamat: string; no_telpon: string }[] = [];
+  let skipped = 0;
+
+  for (const row of rows) {
+    const namaKey = findKey(row, COLUMN_MAP.nama);
+    const nama = namaKey ? String(row[namaKey]).trim() : "";
+    if (!nama) {
+      skipped++;
+      continue;
+    }
+
+    const alamatKey = findKey(row, COLUMN_MAP.alamat);
+    const telponKey = findKey(row, COLUMN_MAP.telpon);
+    batch.push({
+      nama,
+      alamat: alamatKey ? String(row[alamatKey]).trim() : "",
+      no_telpon: telponKey ? normalizePhone(String(row[telponKey])) : "",
     });
   }
 
-  const buf = Buffer.from(await file.arrayBuffer());
-  const wb = XLSX.read(buf, { type: "buffer" });
-  const ws = wb.Sheets[wb.SheetNames[0]];
-  const rows = XLSX.utils.sheet_to_json(ws, { defval: "" }) as Record<string, any>[];
-
-  // Cari kolom fleksibel (case-insensitive, trim)
-  const normalize = (s: string) => s.toLowerCase().replace(/[\s_]/g, "");
-  const findKey = (row: Record<string, any>, candidates: string[]) =>
-    Object.keys(row).find((k) => candidates.includes(normalize(k)));
-
-  let inserted = 0;
-  let skipped = 0;
-
-  const insert = db.prepare("INSERT INTO tamu (nama, alamat, no_telpon) VALUES (?, ?, ?)");
-  const importAll = db.transaction((data: typeof rows) => {
-    for (const row of data) {
-      const namaKey = findKey(row, ["namalengkap", "nama"]);
-      const alamatKey = findKey(row, ["alamat"]);
-      const hpKey = findKey(row, ["notelpon", "notelepon", "nohp", "telepon", "hp", "phone"]);
-
-      const nama = namaKey ? String(row[namaKey]).trim() : "";
-      if (!nama) {
-        skipped++;
-        continue;
-      }
-
-      const alamat = alamatKey ? String(row[alamatKey]).trim() : "";
-      const hp = hpKey ? normalizePhone(String(row[hpKey])) : "";
-
-      insert.run(nama, alamat, hp);
-      inserted++;
-    }
-  });
-
-  importAll(rows);
-
-  return new Response(JSON.stringify({ ok: true, inserted, skipped }), {
-    headers: { "Content-Type": "application/json" },
-  });
+  await q.insertTamuBatch(batch);
+  return json({ ok: true, inserted: batch.length, skipped });
 };

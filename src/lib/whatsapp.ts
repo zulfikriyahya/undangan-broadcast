@@ -1,17 +1,12 @@
-// src/lib/whatsapp.ts
-const ENDPOINT = "https://wapi.zedlabs.id/api/messages/send";
-const API_KEY = "cedb42552eea73ca6e897807b80f07fd1e081aa1f93173fe";
+const ENDPOINT = import.meta.env.WA_ENDPOINT ?? process.env.WA_ENDPOINT ?? "";
+const API_KEY = import.meta.env.WA_API_KEY ?? process.env.WA_API_KEY ?? "";
 
-export async function sendWA(number: string, message: string) {
+export async function sendWA(number: string, message: string): Promise<void> {
+  if (!ENDPOINT) throw new Error("WA_ENDPOINT tidak dikonfigurasi");
   const res = await fetch(ENDPOINT, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-api-key": API_KEY,
-    },
+    headers: { "Content-Type": "application/json", "x-api-key": API_KEY },
     body: JSON.stringify({ number, message }),
   });
-
-  if (!res.ok) throw new Error(`WA API error: ${res.status}`);
-  return res.json();
+  if (!res.ok) throw new Error(`WA API ${res.status}: ${await res.text()}`);
 }

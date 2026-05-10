@@ -9,6 +9,7 @@ echo "# BLUEPRINT" >> "$OUTPUT"
 EXCLUDE_DIRS=(
   "node_modules"
   ".git"
+  ".vscode"
   ".astro"
   "dist"
   ".cache"
