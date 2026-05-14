@@ -12,6 +12,7 @@ module.exports = {
       env: {
         NODE_ENV: "production",
         PORT: 4000, // sesuaikan port app kamu
+        HOST: "0.0.0.0", // ← tambahkan ini
       },
     },
   ],
