@@ -2,9 +2,10 @@ module.exports = {
   apps: [
     {
       name: "undangan-broadcast",
-      script: "./index.js", // sesuaikan dengan entry point app kamu
+      script: "./dist/server/entry.mjs",
       cwd: "/var/www/undang.zedlabs.id",
-      instances: 1,
+      interpreter: "node",
+      interpreter_args: "--experimental-vm-modules",
       autorestart: true,
       watch: false,
       max_memory_restart: "256M",
